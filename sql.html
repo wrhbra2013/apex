@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL - TCU Oracle APEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        /* Painel de Progresso Flutuante */
+        .progress-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .progress-btn { background: #e67e22; color: white; border: none; padding: 15px 20px; border-radius: 50px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        .progress-btn:hover { background: #d35400; }
+        .progress-panel { position: absolute; bottom: 60px; right: 0; background: white; border-radius: 10px; padding: 20px; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; max-height: 70vh; overflow-y: auto; }
+        .progress-panel.open { display: block; }
+        .progress-panel h4 { color: #e67e22; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .progress-panel label { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; border-radius: 5px; transition: background 0.2s; }
+        .progress-panel label:hover { background: #f5f5f5; }
+        .progress-panel input[type="checkbox"] { width: 18px; height: 18px; accent-color: #e67e22; }
+        .progress-panel input:checked + span { text-decoration: line-through; color: #888; }
+        .progress-total { margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee; font-weight: bold; text-align: center; color: #e67e22; }
+        
+        .header {
+            background: linear-gradient(135deg, #d35400, #e67e22);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav {
+            background: #2c3e50;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav a:hover { background: #34495e; }
+        .nav a.active { background: #e67e22; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #d35400;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            color: #e67e22;
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+        ul { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th { background: #e67e22; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .tip {
+            background: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #d35400;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .tag {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 SQL</h1>
+        <p>Structured Query Language - Consultas e manipulação de dados</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">Dashboard</a>
+        <a href="banco-dados.html">Banco de Dados</a>
+        <a href="sql.html" class="active">SQL</a>
+        <a href="plsql.html">PL/SQL</a>
+        <a href="raciocinio-logico.html">Raciocínio Lógico</a>
+        <a href="oracle-apex.html">Oracle APEX</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="section">
+            <h2>1. Categorias de Comandos SQL</h2>
+            
+            <h3><span class="tag">DQL</span> Data Query Language</h3>
+            <p>Comandos para consulta de dados.</p>
+            <ul>
+                <li>SELECT - Recupera dados do banco</li>
+            </ul>
+            
+            <h3><span class="tag">DML</span> Data Manipulation Language</h3>
+            <p>Comandos para manipular dados.</p>
+            <ul>
+                <li>INSERT - Inserir dados</li>
+                <li>UPDATE - Atualizar dados</li>
+                <li>DELETE - Excluir dados</li>
+                <li>MERGE - Inserir ou atualizar (UPSERT)</li>
+            </ul>
+            
+            <h3><span class="tag">DDL</span> Data Definition Language</h3>
+            <p>Comandos para definir estruturas.</p>
+            <ul>
+                <li>CREATE - Criar objetos</li>
+                <li>ALTER - Modificar objetos</li>
+                <li>DROP - Excluir objetos</li>
+                <li>TRUNCATE - Esvaziar tabela</li>
+                <li>RENAME - Renomear objetos</li>
+            </ul>
+            
+            <h3><span class="tag">DCL</span> Data Control Language</h3>
+            <p>Comandos para controle de acesso.</p>
+            <ul>
+                <li>GRANT - Conceder privilégios</li>
+                <li>REVOKE - Revogar privilégios</li>
+            </ul>
+            
+            <h3><span class="tag">TCL</span> Transaction Control Language</h3>
+            <p>Comandos para controlar transações.</p>
+            <ul>
+                <li>COMMIT - Confirmar transação</li>
+                <li>ROLLBACK - Desfazer transação</li>
+                <li>SAVEPOINT - Ponto de salvamento</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>2. SELECT - Consulta de Dados</h2>
+            
+            <h3>Sintaxe Básica</h3>
+            <div class="code">
+SELECT coluna1, coluna2, função_agregação()
+FROM tabela
+WHERE condição
+GROUP BY coluna_agrupamento
+HAVING condição_grupo
+ORDER BY coluna [ASC|DESC];</div>
+            
+            <h3>Cláusulas Principais</h3>
+            <ul>
+                <li><strong>SELECT</strong>: Colunas a recuperar (* = todas)</li>
+                <li><strong>FROM</strong>: Tabela(s) fonte</li>
+                <li><strong>WHERE</strong>: Filtrar linhas ANTES do agrupamento</li>
+                <li><strong>GROUP BY</strong>: Agrupar linhas</li>
+                <li><strong>HAVING</strong>: Filtrar grupos DEPOIS do agrupamento</li>
+                <li><strong>ORDER BY</strong>: Ordenar resultado</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>WHERE vs HAVING</strong>: WHERE filtra linhas antes do GROUP BY (melhor performance). HAVING filtra grupos depois do GROUP BY.
+            </div>
+            
+            <h3>Exemplos</h3>
+            <div class="code">
+-- Consulta básica
+SELECT nome, salario FROM funcionarios WHERE departamento = 'TI' ORDER BY salario DESC;
+
+-- Funções de agregação com GROUP BY
+SELECT departamento, COUNT(*) as total, AVG(salario) as media
+FROM funcionarios
+GROUP BY departamento
+HAVING AVG(salario) > 5000
+ORDER BY media DESC;</div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Joins</h2>
+            
+            <h3>Tipos de JOIN</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>SQL</th>
+                </tr>
+                <tr>
+                    <td>INNER JOIN</td>
+                    <td>Apenas correspondências em ambas</td>
+                    <td>SELECT * FROM A INNER JOIN B ON A.id = B.a_id</td>
+                </tr>
+                <tr>
+                    <td>LEFT JOIN</td>
+                    <td>Todas da esquerda, null na direita</td>
+                    <td>SELECT * FROM A LEFT JOIN B ON A.id = B.a_id</td>
+                </tr>
+                <tr>
+                    <td>RIGHT JOIN</td>
+                    <td>Todas da direita, null na esquerda</td>
+                    <td>SELECT * FROM A RIGHT JOIN B ON A.id = B.a_id</td>
+                </tr>
+                <tr>
+                    <td>FULL JOIN</td>
+                    <td>Todas as linhas de ambas</td>
+                    <td>SELECT * FROM A FULL JOIN B ON A.id = B.a_id</td>
+                </tr>
+                <tr>
+                    <td>CROSS JOIN</td>
+                    <td>Produto cartesiano</td>
+                    <td>SELECT * FROM A CROSS JOIN B</td>
+                </tr>
+                <tr>
+                    <td>NATURAL JOIN</td>
+                    <td>Join automático por colunas com mesmo nome</td>
+                    <td>SELECT * FROM A NATURAL JOIN B</td>
+                </tr>
+                <tr>
+                    <td>USING</td>
+                    <td>Join por coluna específica</td>
+                    <td>SELECT * FROM A JOIN B USING (id)</td>
+                </tr>
+            </table>
+            
+            <h3>Exemplos</h3>
+            <div class="code">
+-- INNER JOIN
+SELECT f.nome, d.nome_departamento
+FROM funcionarios f
+INNER JOIN departamentos d ON f.depto_id = d.id;
+
+-- LEFT JOIN (todos clientes, mesmo sem pedido)
+SELECT c.nome, p.data_pedido
+FROM clientes c
+LEFT JOIN pedidos p ON c.id = p.cliente_id;
+
+-- SELF JOIN (auto-relacionamento)
+SELECT f.nome as funcionario, g.nome as gerente
+FROM funcionarios f
+LEFT JOIN funcionarios g ON f.gerente_id = g.id;</div>
+        </div>
+        
+        <div class="section">
+            <h2>4. Subqueries</h2>
+            
+            <h3>Tipos de Subqueries</h3>
+            <ul>
+                <li><strong>Escalar</strong>: Retorna 1 valor (1 linha, 1 coluna)</li>
+                <li><strong>Linha</strong>: Retorna 1 linha com múltiplas colunas</li>
+                <li><strong>Tabela</strong>: Retorna conjunto de linhas</li>
+            </ul>
+            
+            <h3>Operadores</h3>
+            <table>
+                <tr>
+                    <th>Operador</th>
+                    <th>Uso</th>
+                </tr>
+                <tr>
+                    <td>=, <>, <, >, <=, >=</td>
+                    <td>Comparação com subquery escalar</td>
+                </tr>
+                <tr>
+                    <td>IN</td>
+                    <td>Pertence ao conjunto</td>
+                </tr>
+                <tr>
+                    <td>NOT IN</td>
+                    <td>Não pertence ao conjunto</td>
+                </tr>
+                <tr>
+                    <td>EXISTS</td>
+                    <td>Verifica se subquery retorna linhas</td>
+                </tr>
+                <tr>
+                    <td>ANY/SOME</td>
+                    <td>Igual a qualquer valor</td>
+                </tr>
+                <tr>
+                    <td>ALL</td>
+                    <td>Igual a todos os valores</td>
+                </tr>
+            </table>
+            
+            <h3>Exemplos</h3>
+            <div class="code">
+-- Subquery no WHERE
+SELECT * FROM produtos
+WHERE preco > (SELECT AVG(preco) FROM produtos);
+
+-- Subquery no FROM (inline view)
+SELECT dept, total
+FROM (SELECT department_id as dept, SUM(salary) as total
+      FROM employees GROUP BY department_id)
+WHERE total > 50000;
+
+-- EXISTS
+SELECT * FROM clientes c
+WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.id);
+
+-- Correlacionada
+SELECT e.nome, e.salario
+FROM employees e
+WHERE e.salario > (SELECT AVG(salario) FROM employees WHERE department_id = e.department_id);</div>
+        </div>
+        
+        <div class="section">
+            <h2>5. Funções</h2>
+            
+            <h3>5.1 Funções de Caractere</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>UPPER()</td><td>Maiúsculas</td><td>UPPER('java') → 'JAVA'</td></tr>
+                <tr><td>LOWER()</td><td>Minúsculas</td><td>LOWER('JAVA') → 'java'</td></tr>
+                <tr><td>INITCAP()</td><td>Primeira maiúscula</td><td>INITCAP('joão silva') → 'João Silva'</td></tr>
+                <tr><td>LENGTH()</td><td>Tamanho</td><td>LENGTH('SQL') → 3</td></tr>
+                <tr><td>SUBSTR(s,i,n)</td><td>Substring</td><td>SUBSTR('Oracle',2,3) → 'rac'</td></tr>
+                <tr><td>INSTR(s,sub)</td><td>Posição</td><td>INSTR('banana','a') → 2</td></tr>
+                <tr><td>REPLACE(s,de,para)</td><td>Substituir</td><td>REPLACE('x','x','y') → 'y'</td></tr>
+                <tr><td>CONCAT(s1,s2)</td><td>Concatenar</td><td>CONCAT('A','B') → 'AB'</td></tr>
+                <tr><td>LPAD/RPAD()</td><td>Preencher</td><td>LPAD('A',5,'0') → '0000A'</td></tr>
+                <tr><td>TRIM()</td><td>Remover espaços</td><td>TRIM(' abc ') → 'abc'</td></tr>
+            </table>
+            
+            <h3>5.2 Funções Numéricas</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>ROUND(n,d)</td><td>Arredondar</td><td>ROUND(15.678,2) → 15.68</td></tr>
+                <tr><td>TRUNC(n,d)</td><td>Truncar</td><td>TRUNC(15.678,2) → 15.67</td></tr>
+                <tr><td>MOD(n,m)</td><td>Resto</td><td>MOD(10,3) → 1</td></tr>
+                <tr><td>CEIL(n)</td><td>Menor inteiro ≥ n</td><td>CEIL(5.3) → 6</td></tr>
+                <tr><td>FLOOR(n)</td><td>Maior inteiro ≤ n</td><td>FLOOR(5.7) → 5</td></tr>
+                <tr><td>POWER(n,e)</td><td>Potência</td><td>POWER(2,3) → 8</td></tr>
+                <tr><td>SQRT(n)</td><td>Raiz quadrada</td><td>SQRT(16) → 4</td></tr>
+            </table>
+            
+            <h3>5.3 Funções de Data</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>SYSDATE</td><td>Data atual</td><td>28/02/2026</td></tr>
+                <tr><td>SYSTIMESTAMP</td><td>Timestamp atual</td><td>28/02/2026 10:30:00</td></tr>
+                <tr><td>ADD_MONTHS(d,n)</td><td>Adicionar meses</td><td>ADD_MONTHS('15/01/20',3) → 15/04/20</td></tr>
+                <tr><td>MONTHS_BETWEEN(d1,d2)</td><td>Diferença em meses</td><td>MONTHS_BETWEEN('01/03','01/01') → 2</td></tr>
+                <tr><td>NEXT_DAY(d,day)</td><td>Próximo dia</td><td>NEXT_DAY(SYSDATE,'SEXTA')</td></tr>
+                <tr><td>LAST_DAY(d)</td><td>Último dia do mês</td><td>LAST_DAY('15/02/20') → 29/02/20</td></tr>
+                <tr><td>EXTRACT(c FROM d)</td><td>Extrair componente</td><td>EXTRACT(YEAR FROM SYSDATE)</td></tr>
+            </table>
+            
+            <h3>5.4 Funções de Conversão</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>TO_CHAR(d,fm)</td><td>Data para string</td><td>TO_CHAR(SYSDATE,'DD/MM/YYYY')</td></tr>
+                <tr><td>TO_DATE(s,fm)</td><td>String para data</td><td>TO_DATE('28/02/2026','DD/MM/YYYY')</td></tr>
+                <tr><td>TO_NUMBER(s,fm)</td><td>String para número</td><td>TO_NUMBER('123.45','999.99')</td></tr>
+                <tr><td>CAST(expr AS tipo)</td><td>Converter tipo</td><td>CAST('123' AS NUMBER)</td></tr>
+            </table>
+            
+            <h3>5.5 Funções Condicionais</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>NVL(v1,v2)</td><td>Se null, retorna v2</td><td>NVL(NULL,'X') → 'X'</td></tr>
+                <tr><td>NVL2(v1,v2,v3)</td><td>Se null, v3; senão v2</td><td>NVL2(NULL,'A','B') → 'B'</td></tr>
+                <tr><td>NULLIF(v1,v2)</td><td>Se igual, null; senão v1</td><td>NULLIF('A','A') → NULL</td></tr>
+                <tr><td>COALESCE(v1,v2,...)</td><td>Primeiro não-null</td><td>COALESCE(NULL,'B','C') → 'B'</td></tr>
+                <tr><td>DECODE(val,...)</td><td>CASE simplificado</td><td>DECODE(x,1,'A',2,'B','C')</td></tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>6. Funções de Agregação</h2>
+            
+            <table>
+                <tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>COUNT(*)</td><td>Conta linhas</td><td>COUNT(*) → 100</td></tr>
+                <tr><td>COUNT(col)</td><td>Conta não-nulos</td><td>COUNT(salario) → 95</td></tr>
+                <tr><td>SUM(col)</td><td>Soma valores</td><td>SUM(salario) → 500000</td></tr>
+                <tr><td>AVG(col)</td><td>Média</td><td>AVG(salario) → 5000</td></tr>
+                <tr><td>MIN(col)</td><td>Mínimo</td><td>MIN(salario) → 1000</td></tr>
+                <tr><td>MAX(col)</td><td>Máximo</td><td>MAX(salario) → 50000</td></tr>
+            </table>
+            
+            <h3>ROLLUP e CUBE</h3>
+            <div class="code">
+-- ROLLUP: Total por grupo + total geral
+SELECT department_id, job_id, SUM(salary)
+FROM employees
+GROUP BY ROLLUP(department_id, job_id);
+
+-- CUBE: Todas as combinações possíveis
+SELECT department_id, job_id, SUM(salary)
+FROM employees
+GROUP BY CUBE(department_id, job_id);</div>
+        </div>
+        
+        <div class="section">
+            <h2>7. Operadores de Conjunto</h2>
+            
+            <table>
+                <tr><th>Operador</th><th>Descrição</th></tr>
+                <tr><td>UNION</td><td>Une resultados, remove duplicados</td></tr>
+                <tr><td>UNION ALL</td><td>Une resultados, mantém duplicados</td></tr>
+                <tr><td>INTERSECT</td><td>Interseção (comum a ambos)</td></tr>
+                <tr><td>MINUS</td><td>Primeiro menos segundo</td></tr>
+            </table>
+            
+            <div class="tip">
+                <strong>UNION vs UNION ALL</strong>: Use UNION ALL quando tiver certeza que não há duplicados - é mais rápido pois não faz distinct.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>8. CTE (Common Table Expressions)</h2>
+            
+            <div class="code">
+-- CTE básico
+WITH dept_salarios AS (
+    SELECT department_id, SUM(salary) as total
+    FROM employees
+    GROUP BY department_id
+)
+SELECT * FROM dept_salarios WHERE total > 50000;
+
+-- Múltiplas CTEs
+WITH 
+    vendas_mensais AS (SELECT MONTH, SUM(valor) as total FROM vendas GROUP BY MONTH),
+    media_movel AS (SELECT month, AVG(total) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as media FROM vendas_mensais)
+SELECT * FROM media_movel;</div>
+        </div>
+        
+        <div class="section">
+            <h2>9. Window Functions</h2>
+            
+            <h3>Funções de Numeração</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th></tr>
+                <tr><td>ROW_NUMBER()</td><td>Número sequencial (1,2,3...)</td></tr>
+                <tr><td>RANK()</td><td>Rank com lacunas (1,1,3...)</td></tr>
+                <tr><td>DENSE_RANK()</td><td>Rank sem lacunas (1,1,2...)</td></tr>
+            </table>
+            
+            <h3>Funções de Navegação</h3>
+            <table>
+                <tr><th>Função</th><th>Descrição</th></tr>
+                <tr><td>LAG(coluna,n)</td><td>Valor de n linhas antes</td></tr>
+                <tr><td>LEAD(coluna,n)</td><td>Valor de n linhas depois</td></tr>
+                <tr><td>FIRST_VALUE()</td><td>Primeiro valor da janela</td></tr>
+                <tr><td>LAST_VALUE()</td><td>Último valor da janela</td></tr>
+            </table>
+            
+            <h3>Funções de Agregação como Window</h3>
+            <div class="code">
+-- Ranking dentro do departamento
+SELECT nome, departamento, salario,
+       RANK() OVER (PARTITION BY departamento ORDER BY salario DESC) as ranking,
+       DENSE_RANK() OVER (PARTITION BY departamento ORDER BY salario DESC) as dense_ranking
+FROM funcionarios;
+
+-- Soma acumulativa
+SELECT mes, valor,
+       SUM(valor) OVER (ORDER BY mes) as acumulado,
+       AVG(valor) OVER (ORDER BY mes ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as media_movel
+FROM vendas;
+
+-- Comparar com média do grupo
+SELECT nome, departamento, salario,
+       AVG(salario) OVER (PARTITION BY departamento) as media_depto
+FROM funcionarios;</div>
+        </div>
+        
+        <div class="section">
+            <h2>10. PIVOT e UNPIVOT</h2>
+            
+            <div class="code">
+-- PIVOT: Linhas → Colunas
+SELECT * FROM (
+    SELECT department_id, job_id, salary
+    FROM employees
+)
+PIVOT (
+    AVG(salary)
+    FOR job_id IN ('IT_PROG', 'SA_REP', 'ST_CLERK')
+);
+
+-- UNPIVOT: Colunas → Linhas
+SELECT * FROM tabela_pivot
+UNPIVOT (
+    valor FOR mes IN (JAN, FEV, MAR)
+);</div>
+        </div>
+        
+        <div class="section">
+            <h2>11. Consultas Hierárquicas</h2>
+            
+            <div class="code">
+-- Estrutura hierárquica
+SELECT employee_id, last_name, job_id, manager_id, LEVEL
+FROM employees
+START WITH manager_id IS NULL  -- raiz
+CONNECT BY PRIOR employee_id = manager_id;
+
+-- Ordenação hierárquica
+ORDER SIBLINGS BY last_name;
+
+-- Condição no WHERE (aplica a todos os nós)
+SELECT ... WHERE ...
+
+-- CONNECT_BY_ROOT (valor da raiz)
+SELECT CONNECT_BY_ROOT last_name as raiz, last_name, LEVEL
+FROM employees
+START WITH manager_id IS NULL
+CONNECT BY PRIOR employee_id = manager_id;</div>
+            
+            <h3>Pseudocolunas</h3>
+            <ul>
+                <li><strong>LEVEL</strong>: Profundidade na hierarquia (1 = raiz)</li>
+                <li><strong>CONNECT_BY_ROOT</strong>: Valor da linha raiz</li>
+                <li><strong>SYS_CONNECT_BY_PATH</strong>: Caminho completo</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>12. DML - Manipulação de Dados</h2>
+            
+            <h3>INSERT</h3>
+            <div class="code">
+-- Inserção simples
+INSERT INTO tabela (col1, col2) VALUES (valor1, valor2);
+
+-- Inserção via SELECT
+INSERT INTO tabela_backup (id, nome)
+SELECT employee_id, last_name FROM employees;
+
+-- MERGE (UPSERT)
+MERGE INTO employees e
+USING (SELECT 100 as id, 'Novo' as nome FROM dual) n
+ON (e.employee_id = n.id)
+WHEN MATCHED THEN UPDATE SET e.last_name = n.nome
+WHEN NOT MATCHED THEN INSERT (employee_id, last_name) VALUES (n.id, n.nome);</div>
+            
+            <h3>UPDATE</h3>
+            <div class="code">
+-- Atualização simples
+UPDATE employees SET salary = salary * 1.1 WHERE department_id = 50;
+
+-- Atualização via subquery
+UPDATE employees 
+SET salary = (SELECT AVG(salary) FROM employees WHERE department_id = 80)
+WHERE department_id = 80;</div>
+            
+            <h3>DELETE</h3>
+            <div class="code">
+-- Exclusão
+DELETE FROM employees WHERE employee_id = 100;
+
+-- Exclusão via subquery
+DELETE FROM employees 
+WHERE department_id = (SELECT department_id FROM departments WHERE name = 'TI');</div>
+        </div>
+        
+        <div class="section">
+            <h2>13. DDL - Definição de Dados</h2>
+            
+            <div class="code">
+-- CREATE TABLE
+CREATE TABLE funcionarios (
+    id NUMBER(10) PRIMARY KEY,
+    nome VARCHAR2(100) NOT NULL,
+    salario NUMBER(10,2) DEFAULT 0,
+    data_admissao DATE,
+    foto BLOB,
+    CONSTRAINT chk_salario CHECK (salario >= 0)
+);
+
+-- ALTER TABLE
+ALTER TABLE funcionarios ADD (cargo VARCHAR2(50));
+ALTER TABLE funcionarios MODIFY (nome VARCHAR2(200));
+ALTER TABLE funcionarios DROP COLUMN foto;
+ALTER TABLE funcionarios ADD CONSTRAINT fk_depto FOREIGN KEY (depto_id) REFERENCES departments(id);
+
+-- DROP e TRUNCATE
+DROP TABLE funcionarios;
+TRUNCATE TABLE funcionarios;  -- Mais rápido, não pode rollback</div>
+        </div>
+        
+        <div class="section">
+            <h2>14. Views e Materialized Views</h2>
+            
+            <h3>Views</h3>
+            <div class="code">
+-- View simples
+CREATE VIEW v_funcionarios AS
+SELECT employee_id, last_name, salary, department_id
+FROM employees
+WHERE salary > 5000;
+
+-- View complexa (com funções)
+CREATE OR REPLACE VIEW v_depto_stats AS
+SELECT d.department_name, 
+       COUNT(e.employee_id) as total,
+       AVG(e.salary) as media
+FROM departments d
+LEFT JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_name;
+
+-- View com CHECK OPTION
+CREATE VIEW v TI AS
+SELECT * FROM employees WHERE department_id = 50
+WITH CHECK OPTION;</div>
+            
+            <h3>Materialized Views</h3>
+            <div class="code">
+-- Materialized View (armazena dados fisicamente)
+CREATE MATERIALIZED VIEW mv_vendas_mensais
+BUILD IMMEDIATE
+REFRESH COMPLETE
+START WITH SYSDATE NEXT SYSDATE + 1
+AS
+SELECT TRUNC(data_venda, 'MM') as mes, SUM(valor) as total
+FROM vendas
+GROUP BY TRUNC(data_venda, 'MM');</div>
+            
+            <div class="tip">
+                <strong>View vs Materialized View</strong>: View é uma query armazenada (executa sempre). Materialized View armazena o resultado fisicamente (mel </div>
+       hor performance).
+            </div>
+    </div>
+    
+    <!-- Painel de Progresso -->
+    <div class="progress-toggle">
+        <div class="progress-panel" id="progressPanel">
+            <h4>Meu Progresso</h4>
+            <label><input type="checkbox"> <span>DQL - SELECT</span></label>
+            <label><input type="checkbox"> <span>DML - INSERT, UPDATE, DELETE</span></label>
+            <label><input type="checkbox"> <span>Joins (INNER, LEFT, RIGHT, FULL)</span></label>
+            <label><input type="checkbox"> <span>Subqueries</span></label>
+            <label><input type="checkbox"> <span>Funções (String, Numéricas, Data)</span></label>
+            <label><input type="checkbox"> <span>Funções de Agregação</span></label>
+            <label><input type="checkbox"> <span>CTE e Window Functions</span></label>
+            <label><input type="checkbox"> <span>PIVOT, UNPIVOT, Hierárquicas</span></label>
+            <label><input type="checkbox"> <span>DDL e Views</span></label>
+            <div class="progress-total">0/9 (0%)</div>
+        </div>
+        <button class="progress-btn" onclick="toggleProgress()">
+            <span>📊</span> Progresso
+        </button>
+    </div>
+    <script>
+        function toggleProgress() { document.getElementById('progressPanel').classList.toggle('open'); }
+        document.querySelectorAll('.progress-panel input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const total = document.querySelectorAll('.progress-panel input').length;
+                const checked = document.querySelectorAll('.progress-panel input:checked').length;
+                document.querySelector('.progress-total').textContent = checked + '/' + total + ' (' + Math.round(checked/total*100) + '%)';
+            });
+        });
+    </script>
+</body>
+</html>

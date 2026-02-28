@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PL/SQL - TCU Oracle APEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        /* Painel de Progresso Flutuante */
+        .progress-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .progress-btn { background: #9b59b6; color: white; border: none; padding: 15px 20px; border-radius: 50px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        .progress-btn:hover { background: #7d3c98; }
+        .progress-panel { position: absolute; bottom: 60px; right: 0; background: white; border-radius: 10px; padding: 20px; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; max-height: 70vh; overflow-y: auto; }
+        .progress-panel.open { display: block; }
+        .progress-panel h4 { color: #9b59b6; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .progress-panel label { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; border-radius: 5px; transition: background 0.2s; }
+        .progress-panel label:hover { background: #f5f5f5; }
+        .progress-panel input[type="checkbox"] { width: 18px; height: 18px; accent-color: #9b59b6; }
+        .progress-panel input:checked + span { text-decoration: line-through; color: #888; }
+        .progress-total { margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee; font-weight: bold; text-align: center; color: #9b59b6; }
+        
+        .header {
+            background: linear-gradient(135deg, #7d3c98, #9b59b6);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav {
+            background: #2c3e50;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav a:hover { background: #34495e; }
+        .nav a.active { background: #9b59b6; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #7d3c98;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            color: #9b59b6;
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+        ul { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th { background: #9b59b6; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .tip {
+            background: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background: #fdedec;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #7d3c98;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ PL/SQL</h1>
+        <p>Procedural Language/SQL - Programação no Banco de Dados</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">Dashboard</a>
+        <a href="banco-dados.html">Banco de Dados</a>
+        <a href="sql.html">SQL</a>
+        <a href="plsql.html" class="active">PL/SQL</a>
+        <a href="raciocinio-logico.html">Raciocínio Lógico</a>
+        <a href="oracle-apex.html">Oracle APEX</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="section">
+            <h2>1. Estrutura Básica</h2>
+            
+            <h3>Bloco Anônimo</h3>
+            <div class="code">
+DECLARE
+    -- Declaração de variáveis, tipos, cursores
+    v_nome VARCHAR2(100);
+    v_salario NUMBER(10,2);
+BEGIN
+    -- Corpo do programa (obrigatório)
+    SELECT last_name, salary 
+    INTO v_nome, v_salario 
+    FROM employees 
+    WHERE employee_id = 100;
+    
+    DBMS_OUTPUT.PUT_LINE('Nome: ' || v_nome);
+    DBMS_OUTPUT.PUT_LINE('Salário: ' || v_salario);
+EXCEPTION
+    -- Tratamento de exceções
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Funcionário não encontrado');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Erro: ' || SQLERRM);
+END;</div>
+            
+            <h3>Seções do Bloco</h3>
+            <ul>
+                <li><strong>DECLARE</strong>: Opcional. Declara variáveis, constantes, tipos, cursores.</li>
+                <li><strong>BEGIN</strong>: Obrigatório. Contém instruções SQL e PL/SQL.</li>
+                <li><strong>EXCEPTION</strong>: Opcional. Trata erros que ocorrem em BEGIN.</li>
+                <li><strong>END</strong>: Obrigatório. Finaliza o bloco.</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>2. Variáveis e Tipos de Dados</h2>
+            
+            <h3>Declaração de Variáveis</h3>
+            <div class="code">
+DECLARE
+    v_nome VARCHAR2(100);           -- Variável simples
+    v_data DATE := SYSDATE;         -- Com valor padrão
+    v_contador NUMBER(5) := 0;      -- Inicializada
+    c_taxa CONSTANT NUMBER(3,2) := 0.05;  -- Constante
+    v_verdadeiro BOOLEAN := TRUE;
+BEGIN
+    NULL;  -- Instrução nula (placeholder)
+END;</div>
+            
+            <h3>%TYPE e %ROWTYPE</h3>
+            <div class="code">
+DECLARE
+    v_nome employees.last_name%TYPE;    -- Mesmo tipo da coluna
+    v_emp employees%ROWTYPE;             -- Estrutura da linha toda
+BEGIN
+    SELECT * INTO v_emp FROM employees WHERE employee_id = 100;
+    DBMS_OUTPUT.PUT_LINE(v_emp.last_name);
+END;</div>
+            
+            <h3>Tipos Compostos</h3>
+            <div class="code">
+DECLARE
+    -- RECORD (estrutura)
+    TYPE t_funcionario IS RECORD (
+        nome VARCHAR2(100),
+        salario NUMBER(10,2),
+        data_adm DATE
+    );
+    v_func t_funcionario;
+BEGIN
+    v_func.nome := 'João';
+    v_func.salario := 5000;
+    v_func.data_adm := SYSDATE;
+END;</div>
+            
+            <h3>Atribuição</h3>
+            <ul>
+                <li><strong>:=</strong>: Atribuição padrão</li>
+                <li><strong>SELECT INTO</strong>: Atribui resultado de query</li>
+                <li><strong>:= DEFAULT</strong>: Atribui valor padrão</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>3. Estruturas de Controle</h2>
+            
+            <h3>IF-THEN-ELSIF</h3>
+            <div class="code">
+IF v_salario > 10000 THEN
+    DBMS_OUTPUT.PUT_LINE('Alto');
+ELSIF v_salario > 5000 THEN
+    DBMS_OUTPUT.PUT_LINE('Médio');
+ELSE
+    DBMS_OUTPUT.PUT_LINE('Baixo');
+END IF;</div>
+            
+            <h3>CASE</h3>
+            <div class="code">
+-- CASE Simples
+v_nivel := CASE v_depto
+    WHEN 10 THEN 'Administrativo'
+    WHEN 20 THEN 'Marketing'
+    WHEN 30 THEN 'Vendas'
+    ELSE 'Outros'
+END;
+
+-- CASE Pesquisa
+v_msg := CASE 
+    WHEN v_salario > 10000 THEN 'Gerente'
+    WHEN v_salario > 5000 THEN 'Pleno'
+    ELSE 'Júnior'
+END;</div>
+            
+            <h3>LOOP Básico</h3>
+            <div class="code">
+-- Loop simples
+LOOP
+    v_contador := v_contador + 1;
+    EXIT WHEN v_contador > 10;
+END LOOP;
+
+-- FOR
+FOR i IN 1..10 LOOP
+    DBMS_OUTPUT.PUT_LINE(i);
+END LOOP;
+
+-- FOR REVERSE (ordem inversa)
+FOR i IN REVERSE 1..10 LOOP
+    DBMS_OUTPUT.PUT_LINE(i);  -- 10 até 1
+END LOOP;
+
+-- WHILE
+WHILE v_contador < 10 LOOP
+    v_contador := v_contador + 1;
+END LOOP;</div>
+        </div>
+        
+        <div class="section">
+            <h2>4. Cursors</h2>
+            
+            <h3>Cursor Explícito</h3>
+            <div class="code">
+DECLARE
+    CURSOR c_emp IS 
+        SELECT employee_id, last_name, salary 
+        FROM employees 
+        WHERE department_id = 50;
+    v_emp c_emp%ROWTYPE;
+BEGIN
+    OPEN c_emp;
+    LOOP
+        FETCH c_emp INTO v_emp;
+        EXIT WHEN c_emp%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(v_emp.last_name || ' - ' || v_emp.salary);
+    END LOOP;
+    CLOSE c_emp;
+END;</div>
+            
+            <h3>Cursor FOR (implícito)</h3>
+            <div class="code">
+-- Forma mais simples
+FOR emp IN (SELECT * FROM employees WHERE department_id = 50) LOOP
+    DBMS_OUTPUT.PUT_LINE(emp.last_name);
+END LOOP;
+
+-- Com cursor declarado
+FOR emp IN c_emp LOOP
+    DBMS_OUTPUT.PUT_LINE(emp.last_name);
+END LOOP;</div>
+            
+            <h3>Atributos do Cursor</h3>
+            <table>
+                <tr><th>Atributo</th><th>Descrição</th></tr>
+                <tr><td>%FOUND</td><td>Retornou linha?</td></tr>
+                <tr><td>%NOTFOUND</td><td>Não retornou linha?</td></tr>
+                <tr><td>%ISOPEN</td><td>Cursor está aberto?</td></tr>
+                <tr><td>%ROWCOUNT</td><td>Quantas linhas processadas</td></tr>
+            </table>
+            
+            <h3>Cursor com Parâmetros</h3>
+            <div class="code">
+DECLARE
+    CURSOR c_emp(p_depto NUMBER) IS
+        SELECT * FROM employees WHERE department_id = p_depto;
+BEGIN
+    FOR emp IN c_emp(50) LOOP
+        DBMS_OUTPUT.PUT_LINE(emp.last_name);
+    END LOOP;
+END;</div>
+        </div>
+        
+        <div class="section">
+            <h2>5. Tratamento de Exceções</h2>
+            
+            <h3>Exceções Predefinidas</h3>
+            <table>
+                <tr><th>Exceção</th><th>Descrição</th></tr>
+                <tr><td>NO_DATA_FOUND</td><td>SELECT INTO sem linhas</td></tr>
+                <tr><td>TOO_MANY_ROWS</td><td>SELECT INTO com múltiplas linhas</td></tr>
+                <tr><td>DUP_VAL_ON_INDEX</td><td>Inserção duplicada em índice único</td></tr>
+                <tr><td>ZERO_DIVIDE</td><td>Divisão por zero</td></tr>
+                <tr><td>INVALID_NUMBER</td><td>Conversão de número falha</td></tr>
+                <tr><td>VALUE_ERROR</td><td>Erro de valor/truncagem</td></tr>
+                <tr><td>OTHERS</td><td>Qualquer exceção (catch-all)</td></tr>
+            </table>
+            
+            <h3>Tratamento</h3>
+            <div class="code">
+BEGIN
+    SELECT salary INTO v_salario FROM employees WHERE employee_id = 999;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Funcionário não encontrado');
+    WHEN TOO_MANY_ROWS THEN
+        DBMS_OUTPUT.PUT_LINE('Muitos funcionários');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Erro: ' || SQLERRM);
+END;</div>
+            
+            <h3>Exceções Definidas pelo Usuário</h3>
+            <div class="code">
+DECLARE
+    e_salario_invalido EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_salario_invalido, -20001);
+BEGIN
+    IF v_salario < 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Salário não pode ser negativo');
+    END IF;
+EXCEPTION
+    WHEN e_salario_invalido THEN
+        DBMS_OUTPUT.PUT_LINE(SQLERRM);
+END;</div>
+        </div>
+        
+        <div class="section">
+            <h2>6. Procedures</h2>
+            
+            <h3>Criação</h3>
+            <div class="code">
+CREATE OR REPLACE PROCEDURE p_atualiza_salario(
+    p_emp_id IN NUMBER,
+    p_novo_salario IN NUMBER
+) IS
+    v_old_salary employees.salary%TYPE;
+BEGIN
+    SELECT salary INTO v_old_salary FROM employees WHERE employee_id = p_emp_id;
+    
+    UPDATE employees SET salary = p_novo_salario WHERE employee_id = p_emp_id;
+    
+    DBMS_OUTPUT.PUT_LINE('Salário alterado de ' || v_old_salary || ' para ' || p_novo_salario);
+    
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END p_atualiza_salario;</div>
+            
+            <h3>Parâmetros</h3>
+            <ul>
+                <li><strong>IN</strong>: Entrada (padrão)</li>
+                <li><strong>OUT</strong>: Saída</li>
+                <li><strong>IN OUT</strong>: Entrada e Saída</li>
+            </ul>
+            
+            <h3>Execução</h3>
+            <div class="code">
+-- Chamada básica
+EXEC p_atualiza_salario(100, 20000);
+
+-- Com variáveis
+EXEC p_atualiza_salario(p_emp_id => 100, p_novo_salario => 25000);</div>
+        </div>
+        
+        <div class="section">
+            <h2>7. Funções</h2>
+            
+            <h3>Criação</h3>
+            <div class="code">
+CREATE OR REPLACE FUNCTION f_obter_nome(
+    p_emp_id IN NUMBER
+) RETURN VARCHAR2 IS
+    v_nome employees.last_name%TYPE;
+BEGIN
+    SELECT last_name INTO v_nome 
+    FROM employees 
+    WHERE employee_id = p_emp_id;
+    
+    RETURN v_nome;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+END f_obter_nome;</div>
+            
+            <h3>Diferença Procedure vs Função</h3>
+            <table>
+                <tr><th>Procedure</th><th>Função</th></tr>
+                <tr><td>Executada com EXEC</td><td>Usada em expressões SQL/PL</td></tr>
+                <td> pode usar OUT/IN OUT</td><td>RETURN obrigatório</td>
+                <tr><td>Não retorna valor</td><td>Retorna valor</td></tr>
+            </table>
+            
+            <h3>Execução</h3>
+            <div class="code">
+-- Em PL/SQL
+DECLARE
+    v_nome VARCHAR2(100);
+BEGIN
+    v_nome := f_obter_nome(100);
+    DBMS_OUTPUT.PUT_LINE(v_nome);
+    
+    -- Ou diretamente
+    DBMS_OUTPUT.PUT_LINE(f_obter_nome(101));
+END;
+
+-- Em SQL
+SELECT employee_id, f_obter_nome(employee_id) as nome FROM employees;</div>
+        </div>
+        
+        <div class="section">
+            <h2>8. Packages</h2>
+            
+            <h3>Spec (Especificação)</h3>
+            <div class="code">
+CREATE OR REPLACE PACKAGE pkg_funcionarios AS
+    PROCEDURE p_atualizar(p_id NUMBER, p_nome VARCHAR2);
+    FUNCTION f_obter_nome(p_id NUMBER) RETURN VARCHAR2;
+    c_salario_minimo CONSTANT NUMBER := 1000;
+END pkg_funcionarios;</div>
+            
+            <h3>Body (Corpo)</h3>
+            <div class="code">
+CREATE OR REPLACE PACKAGE BODY pkg_funcionarios AS
+    PROCEDURE p_atualizar(p_id NUMBER, p_nome VARCHAR2) IS
+    BEGIN
+        UPDATE employees SET last_name = p_nome WHERE employee_id = p_id;
+    END p_atualizar;
+    
+    FUNCTION f_obter_nome(p_id NUMBER) RETURN VARCHAR2 IS
+        v_nome employees.last_name%TYPE;
+    BEGIN
+        SELECT last_name INTO v_nome FROM employees WHERE employee_id = p_id;
+        RETURN v_nome;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN RETURN NULL;
+    END f_obter_nome;
+END pkg_funcionarios;</div>
+            
+            <h3>Uso</h3>
+            <div class="code">
+-- Chamando procedimentos/funções do package
+BEGIN
+    pkg_funcionarios.p_atualizar(100, 'Silva');
+    DBMS_OUTPUT.PUT_LINE(pkg_funcionarios.f_obter_nome(100));
+    DBMS_OUTPUT.PUT_LINE(pkg_funcionarios.c_salario_minimo);
+END;</div>
+            
+            <div class="tip">
+                <strong>Vantagens de Packages</strong>: Encapsulamento, namespace próprio, carregamento rápido (todo o corpo não precisa ser compilado de uma vez).
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>9. Triggers</h2>
+            
+            <h3>Tipos de Triggers</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>BEFORE</td><td>Executa antes do evento</td></tr>
+                <tr><td>AFTER</td><td>Executa após o evento</td></tr>
+                <tr><td>INSTEAD OF</td><td>Substitui o evento (views)</td></tr>
+                <tr><td>FOR EACH ROW</td><td>Para cada linha afetada</td></tr>
+                <tr><td>COMPOUND</td><td>Múltiplos eventos num trigger</td></tr>
+            </table>
+            
+            <h3>Eventos</h3>
+            <ul>
+                <li>DML: INSERT, UPDATE, DELETE</li>
+                <li>DDL: CREATE, ALTER, DROP</li>
+                <li>DATABASE: LOGON, LOGOFF, SERVERERROR</li>
+            </ul>
+            
+            <h3>Exemplos</h3>
+            <div class="code">
+-- Trigger de nível de linha (BEFORE INSERT/UPDATE)
+CREATE OR REPLACE TRIGGER trg_emp_salary
+BEFORE INSERT OR UPDATE OF salary ON employees
+FOR EACH ROW
+BEGIN
+    IF :NEW.salary < 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Salário não pode ser negativo');
+    END IF;
+END;
+
+-- Trigger de statements (AFTER INSERT)
+CREATE OR REPLACE TRIGGER trg_emp_log
+AFTER INSERT ON employees
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Novo funcionário inserido');
+END;
+
+-- INSTEAD OF (para views)
+CREATE OR REPLACE TRIGGER trg_view_insert
+INSTEAD OF INSERT ON v_funcionarios
+FOR EACH ROW
+BEGIN
+    INSERT INTO employees (employee_id, last_name) 
+    VALUES (:NEW.employee_id, :NEW.last_name);
+END;</div>
+            
+            <h3>:NEW e :OLD</h3>
+            <ul>
+                <li><strong>:NEW</strong>: Novo valor (INSERT, UPDATE)</li>
+                <li><strong>:OLD</strong>: Valor antigo (UPDATE, DELETE)</li>
+                <li>Em INSERT: :OLD é NULL</li>
+                <li>Em DELETE: :NEW é NULL</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>10. Dynamic SQL</h2>
+            
+            <h3>EXECUTE IMMEDIATE</h3>
+            <div class="code">
+DECLARE
+    v_sql VARCHAR2(500);
+    v_tabela VARCHAR2(50) := 'employees';
+BEGIN
+    -- SQL dinâmico simples
+    EXECUTE IMMEDIATE 'INSERT INTO log (msg) VALUES (''Teste'')';
+    
+    -- Com variáveis (USING)
+    EXECUTE IMMEDIATE 
+        'UPDATE employees SET salary = salary * :1 WHERE department_id = :2'
+        USING 1.1, 50;
+    
+    -- Com INTO (para SELECT)
+    EXECUTE IMMEDIATE 
+        'SELECT COUNT(*) FROM employees WHERE department_id = :1'
+        INTO v_contador
+        USING 50;
+END;</div>
+            
+            <h3>DBMS_SQL</h3>
+            <p>Para SQL dinâmico complexo ou número variável de colunas.</p>
+            <div class="code">
+DECLARE
+    v_cursor NUMBER;
+    v_rows NUMBER;
+    v_sql VARCHAR2(500) := 'SELECT * FROM employees WHERE department_id = :dept';
+BEGIN
+    v_cursor := DBMS_SQL.OPEN_CURSOR;
+    DBMS_SQL.PARSE(v_cursor, v_sql, DBMS_SQL.NATIVE);
+    DBMS_SQL.BIND_VARIABLE(v_cursor, ':dept', 50);
+    v_rows := DBMS_SQL.EXECUTE(v_cursor);
+    DBMS_SQL.CLOSE_CURSOR(v_cursor);
+END;</div>
+        </div>
+        
+        <div class="section">
+            <h2>11. Bulk Operations</h2>
+            
+            <h3>BULK COLLECT</h3>
+            <div class="code">
+DECLARE
+    TYPE t_nomes IS TABLE OF employees.last_name%TYPE;
+    v_nomes t_nomes;
+BEGIN
+    -- Coleta múltiplas linhas de uma vez
+    SELECT last_name BULK COLLECT INTO v_nomes
+    FROM employees
+    WHERE department_id = 50;
+    
+    FOR i IN 1..v_nomes.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE(v_nomes(i));
+    END LOOP;
+END;</div>
+            
+            <h3>FORALL</h3>
+            <div class="code">
+DECLARE
+    TYPE t_ids IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    v_ids t_ids;
+BEGIN
+    v_ids(1) := 100;
+    v_ids(2) := 101;
+    v_ids(3) := 102;
+    
+    -- Executa DML para todos os elementos
+    FORALL i IN 1..v_ids.COUNT
+        UPDATE employees SET salary = salary * 1.1
+        WHERE employee_id = v_ids(i);
+    
+    COMMIT;
+END;</div>
+            
+            <div class="tip">
+                <strong>BULK COLLECT e FORALL</strong>: Podem melhorar performance em até 10x em operações com muitas linhas, pois reduzem context switches entre SQL e PL/SQL.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>12. PRAGMAs</h2>
+            
+            <h3>AUTONOMOUS_TRANSACTION</h3>
+            <p>Cria uma transação independente que pode fazer commit/rollback sem afetar a transação principal.</p>
+            <div class="code">
+CREATE OR REPLACE TRIGGER trg_log
+AFTER INSERT ON employees
+DECLARE
+    PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+    INSERT INTO log_audit (msg, data) VALUES ('Novo empleado', SYSDATE);
+    COMMIT;  -- Não afeta a transação principal
+END;</div>
+            
+            <h3>EXCEPTION_INIT</h3>
+            <p>Associa um nome a um código de erro Oracle.</p>
+            <div class="code">
+DECLARE
+    e_minha_excecao EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_minha_excecao, -20001);
+BEGIN
+    RAISE_APPLICATION_ERROR(-20001, 'Erro personalizado');
+EXCEPTION
+    WHEN e_minha_excecao THEN
+        DBMS_OUTPUT.PUT_LINE('Minha exceção: ' || SQLERRM);
+END;</div>
+        </div>
+        
+        <div class="section">
+            <h2>13. Collections</h2>
+            
+            <h3>VARRAY</h3>
+            <div class="code">
+DECLARE
+    TYPE t_dias IS VARRAY(7) OF VARCHAR2(10);
+    v_dias t_dias := t_dias('Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom');
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(v_dias(1));  -- 'Seg'
+    DBMS_OUTPUT.PUT_LINE(v_dias.COUNT);  -- 7
+END;</div>
+            
+            <h3>Nested Table</h3>
+            <div class="code">
+DECLARE
+    TYPE t_nomes IS TABLE OF VARCHAR2(100);
+    v_nomes t_nomes := t_nomes();  -- Inicializar
+BEGIN
+    v_nomes.EXTEND;      -- Adicionar elemento
+    v_nomes(1) := 'João';
+    v_nomes.EXTEND;
+    v_nomes(2) := 'Maria';
+    DBMS_OUTPUT.PUT_LINE(v_nomes.COUNT);  -- 2
+END;</div>
+            
+            <h3>Associative Array (Index By)</h3>
+            <div class="code">
+DECLARE
+    TYPE t_notas IS TABLE OF NUMBER INDEX BY VARCHAR2(50);
+    v_notas t_notas;
+BEGIN
+    v_notas('João') := 8.5;
+    v_notas('Maria') := 9.0;
+    DBMS_OUTPUT.PUT_LINE(v_notas('João'));
+END;</div>
+            
+            <h3>Métodos de Collection</h3>
+            <ul>
+                <li><strong>EXTEND(n)</strong>: Adiciona n elementos</li>
+                <li><strong>DELETE(n)</strong>: Remove elemento n</li>
+                <li><strong>COUNT</strong>: Número de elementos</li>
+                <li><strong>FIRST/LAST</strong>: Primeiro/Último índice</li>
+                <li><strong>PRIOR(n)/NEXT(n)</strong>: Índice anterior/próximo</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Painel de Progresso -->
+    <div class="progress-toggle">
+        <div class="progress-panel" id="progressPanel">
+            <h4>Meu Progresso</h4>
+            <label><input type="checkbox"> <span>Estrutura Básica</span></label>
+            <label><input type="checkbox"> <span>Variáveis e Tipos</span></label>
+            <label><input type="checkbox"> <span>Estruturas de Controle</span></label>
+            <label><input type="checkbox"> <span>Cursors</span></label>
+            <label><input type="checkbox"> <span>Tratamento de Exceções</span></label>
+            <label><input type="checkbox"> <span>Procedures</span></label>
+            <label><input type="checkbox"> <span>Funções</span></label>
+            <label><input type="checkbox"> <span>Packages</span></label>
+            <label><input type="checkbox"> <span>Triggers</span></label>
+            <label><input type="checkbox"> <span>Dynamic SQL</span></label>
+            <label><input type="checkbox"> <span>Bulk Operations</span></label>
+            <label><input type="checkbox"> <span>PRAGMAs</span></label>
+            <label><input type="checkbox"> <span>Collections</span></label>
+            <div class="progress-total">0/13 (0%)</div>
+        </div>
+        <button class="progress-btn" onclick="toggleProgress()">
+            <span>📊</span> Progresso
+        </button>
+    </div>
+    <script>
+        function toggleProgress() { document.getElementById('progressPanel').classList.toggle('open'); }
+        document.querySelectorAll('.progress-panel input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const total = document.querySelectorAll('.progress-panel input').length;
+                const checked = document.querySelectorAll('.progress-panel input:checked').length;
+                document.querySelector('.progress-total').textContent = checked + '/' + total + ' (' + Math.round(checked/total*100) + '%)';
+            });
+        });
+    </script>
+</body>
+</html>

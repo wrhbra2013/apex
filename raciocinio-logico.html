@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raciocínio Lógico - TCU Oracle APEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        /* Painel de Progresso Flutuante */
+        .progress-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .progress-btn { background: #3498db; color: white; border: none; padding: 15px 20px; border-radius: 50px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        .progress-btn:hover { background: #2471a3; }
+        .progress-panel { position: absolute; bottom: 60px; right: 0; background: white; border-radius: 10px; padding: 20px; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; max-height: 70vh; overflow-y: auto; }
+        .progress-panel.open { display: block; }
+        .progress-panel h4 { color: #3498db; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .progress-panel label { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; border-radius: 5px; transition: background 0.2s; }
+        .progress-panel label:hover { background: #f5f5f5; }
+        .progress-panel input[type="checkbox"] { width: 18px; height: 18px; accent-color: #3498db; }
+        .progress-panel input:checked + span { text-decoration: line-through; color: #888; }
+        .progress-total { margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee; font-weight: bold; text-align: center; color: #3498db; }
+        
+        .header {
+            background: linear-gradient(135deg, #2471a3, #3498db);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav {
+            background: #2c3e50;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav a:hover { background: #34495e; }
+        .nav a.active { background: #3498db; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #2471a3;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            color: #3498db;
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+        ul { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .formula {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .example {
+            background: #e8f6f3;
+            border-left: 4px solid #1abc9c;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .tip {
+            background: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2471a3;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 Raciocínio Lógico</h1>
+        <p>Lógica proposicional, sequências, argumentação e matemática básica</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">Dashboard</a>
+        <a href="banco-dados.html">Banco de Dados</a>
+        <a href="sql.html">SQL</a>
+        <a href="plsql.html">PL/SQL</a>
+        <a href="raciocinio-logico.html" class="active">Raciocínio Lógico</a>
+        <a href="oracle-apex.html">Oracle APEX</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="section">
+            <h2>1. Lógica Proposicional</h2>
+            
+            <h3>Conceitos Fundamentais</h3>
+            <ul>
+                <li><strong>Proposição</strong>: Sentença declarativa que pode ser verdadeira (V) ou falsa (F).</li>
+                <li><strong>Conectivos lógicos</strong>: ∧ (e), ∨ (ou), → (implica), ↔ (equivalente), ¬ (negação)</li>
+                <li><strong>Valor lógico</strong>: V ou F</li>
+            </ul>
+            
+            <h3>Tabela-Verdade</h3>
+            <table>
+                <tr>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>¬A</th>
+                    <th>A∧B</th>
+                    <th>A∨B</th>
+                    <th>A→B</th>
+                    <th>A↔B</th>
+                </tr>
+                <tr>
+                    <td>V</td><td>V</td><td>F</td><td>V</td><td>V</td><td>V</td><td>V</td>
+                </tr>
+                <tr>
+                    <td>V</td><td>F</td><td>F</td><td>F</td><td>V</td><td>F</td><td>F</td>
+                </tr>
+                <tr>
+                    <td>F</td><td>V</td><td>V</td><td>F</td><td>V</td><td>V</td><td>F</td>
+                </tr>
+                <tr>
+                    <td>F</td><td>F</td><td>V</td><td>F</td><td>F</td><td>V</td><td>V</td>
+                </tr>
+            </table>
+            
+            <h3>Implicação (A → B)</h3>
+            <p>Só é FALSA quando A é verdadeira e B é falsa.</p>
+            <div class="example">
+                <strong>Exemplo:</strong> "Se chove, então a rua molha"<br>
+                - Chove (V) → Rua molha (V) = V<br>
+                - Chove (V) → Rua seca (F) = F (mentira!)<br>
+                - Não chove (F) → Rua molha (V) = V (pode estar molhada por outro motivo)<br>
+                - Não chove (F) → Rua seca (F) = V
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Equivalências Lógicas</h2>
+            
+            <h3>Implicação</h3>
+            <div class="formula">A → B ≡ ¬A ∨ B</div>
+            
+            <h3>Leis de De Morgan</h3>
+            <div class="formula">¬(A ∧ B) ≡ ¬A ∨ ¬B</div>
+            <div class="formula">¬(A ∨ B) ≡ ¬A ∧ ¬B</div>
+            
+            <h3>Contrapositiva</h3>
+            <div class="formula">A → B ≡ ¬B → ¬A</div>
+            
+            <h3>Idempotência</h3>
+            <div class="formula">A ∧ A ≡ A</div>
+            <div class="formula">A ∨ A ≡ A</div>
+            
+            <h3>Comutatividade</h3>
+            <div class="formula">A ∧ B ≡ B ∧ A</div>
+            <div class="formula">A ∨ B ≡ B ∨ A</div>
+            
+            <h3>Associatividade</h3>
+            <div class="formula">(A ∧ B) ∧ C ≡ A ∧ (B ∧ C)</div>
+            <div class="formula">(A ∨ B) ∨ C ≡ A ∨ (B ∨ C)</div>
+            
+            <h3>Distributividade</h3>
+            <div class="formula">A ∧ (B ∨ C) ≡ (A ∧ B) ∨ (A ∧ C)</div>
+            <div class="formula">A ∨ (B ∧ C) ≡ (A ∨ B) ∧ (A ∨ C)</div>
+            
+            <h3>Absorção</h3>
+            <div class="formula">A ∧ (A ∨ B) ≡ A</div>
+            <div class="formula">A ∨ (A ∧ B) ≡ A</div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Argumentos e Silogismos</h2>
+            
+            <h3>Validade de Argumentos</h3>
+            <p>Um argumento é válido quando a conclusão é necessariamente verdadeira sempre que as premissas são verdadeiras.</p>
+            
+            <h3>Regras de Inferência</h3>
+            <table>
+                <tr>
+                    <th>Nome</th>
+                    <th>Forma</th>
+                    <th>Válido?</th>
+                </tr>
+                <tr>
+                    <td>Modus Ponens</td>
+                    <td>A → B, A ⊢ B</td>
+                    <td>✓ Válido</td>
+                </tr>
+                <tr>
+                    <td>Modus Tollens</td>
+                    <td>A → B, ¬B ⊢ ¬A</td>
+                    <td>✓ Válido</td>
+                </tr>
+                <tr>
+                    <td>Silogismo Hipotético</td>
+                    <td>A → B, B → C ⊢ A → C</td>
+                    <td>✓ Válido</td>
+                </tr>
+                <tr>
+                    <td>Silogismo Disjuntivo</td>
+                    <td>A ∨ B, ¬A ⊢ B</td>
+                    <td>✓ Válido</td>
+                </tr>
+                <tr>
+                    <td>Afirmação do Consequente</td>
+                    <td>A → B, B ⊢ A</td>
+                    <td>✗ Falácia</td>
+                </tr>
+                <tr>
+                    <td>Negação do Antecedente</td>
+                    <td>A → B, ¬A ⊢ ¬B</td>
+                    <td>✗ Falácia</td>
+                </tr>
+            </table>
+            
+            <div class="tip">
+                <strong>Dica:</strong> Memorize que Modus Ponens e Modus Tollens são válidos. Afirmação do consequente e negação do antecedente são falácias!
+            </div>
+            
+            <h3>Exemplos</h3>
+            <div class="example">
+                <strong>Modus Ponens (Válido):</strong><br>
+                P1: Se estudo, passo na prova.<br>
+                P2: Estudei.<br>
+                C: Logo, passei na prova. ✓
+            </div>
+            <div class="example">
+                <strong>Modus Tollens (Válido):</strong><br>
+                P1: Se estudo, passo na prova.<br>
+                P2: Não passei na prova.<br>
+                C: Logo, não estudei. ✓
+            </div>
+            <div class="example">
+                <strong>Falácia (Afirmação do Consequente):</strong><br>
+                P1: Se estudo, passo na prova.<br>
+                P2: Passei na prova.<br>
+                C: Logo, estudei. ✗ (pode ter passado por cola)
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>4. Sequências Numéricas</h2>
+            
+            <h3>Progressão Aritmética (PA)</h3>
+            <p>Razão constante (cada termo = anterior + razão)</p>
+            <div class="formula">aₙ = a₁ + (n-1) × r</div>
+            <div class="formula">Soma = n × (a₁ + aₙ) / 2</div>
+            
+            <div class="example">
+                <strong>Exemplo:</strong> 2, 5, 8, 11, 14,...<br>
+                a₁ = 2, r = 3<br>
+                a₁₀ = 2 + (10-1) × 3 = 2 + 27 = 29
+            </div>
+            
+            <h3>Progressão Geométrica (PG)</h3>
+            <p>Cada termo = anterior × razão</p>
+            <div class="formula">aₙ = a₁ × q^(n-1)</div>
+            <div class="formula">Soma = a₁ × (qⁿ - 1) / (q - 1)</div>
+            
+            <div class="example">
+                <strong>Exemplo:</strong> 3, 6, 12, 24, 48,...<br>
+                a₁ = 3, q = 2<br>
+                a₅ = 3 × 2^(5-1) = 3 × 16 = 48
+            </div>
+            
+            <h3>Sequências Especiais</h3>
+            <ul>
+                <li><strong>Fibonacci:</strong> 1, 1, 2, 3, 5, 8, 13, 21,... (cada = soma dos dois anteriores)</li>
+                <li><strong>Quadrados perfeitos:</strong> 1, 4, 9, 16, 25, 36,...</li>
+                <li><strong>Triangulares:</strong> 1, 3, 6, 10, 15, 21,... (n(n+1)/2)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>5. Padrões e Sequências</h2>
+            
+            <h3>Identificação de Padrões</h3>
+            <ul>
+                <li><strong>Operações alternadas:</strong> +2, ×3, +4, ×5,...</li>
+                <li><strong>Múltiplos:</strong> 3, 6, 9, 12 (múltiplos de 3)</li>
+                <li><strong>Quadrados perfeitos:</strong> 1², 2², 3², 4² → 1, 4, 9, 16</li>
+                <li><strong>Primos:</strong> 2, 3, 5, 7, 11, 13, 17, 19...</li>
+            </ul>
+            
+            <h3>Exemplos de Problemas</h3>
+            <div class="example">
+                <strong>Exemplo 1:</strong> 2, 4, 8, 16, ?<br>
+                Resposta: 32 (cada × 2)
+            </div>
+            <div class="example">
+                <strong>Exemplo 2:</strong> 1, 1, 2, 3, 5, 8, ?<br>
+                Resposta: 13 (Fibonacci)
+            </div>
+            <div class="example">
+                <strong>Exemplo 3:</strong> 1, 4, 9, 16, 25, ?<br>
+                Resposta: 36 (quadrados perfeitos)
+            </div>
+            <div class="example">
+                <strong>Exemplo 4:</strong> 1, 2, 6, 24, 120, ?<br>
+                Resposta: 720 (fatoriais: 1!, 2!, 3!, 4!, 5!, 6!)
+            </div>
+            <div class="example">
+                <strong>Exemplo 5:</strong> 2, 10, 30, 68, ?<br>
+                Resposta: 130 (n³ + 1: 1³+1=2, 2³+2=10, 3³+3=30, 4³+4=68, 5³+5=130)
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>6. Raciocínio Matemático</h2>
+            
+            <h3>Regra de Três</h3>
+            <div class="example">
+                <strong>Simples:</strong><br>
+                Se 5 maçãs custam R$ 10, quanto custam 8 maçãs?<br>
+                5 → 10<br>
+                8 → x<br>
+                x = 8 × 10 / 5 = R$ 16
+            </div>
+            <div class="example">
+                <strong>Composta:</strong><br>
+                10 operários constroem 5 casas em 30 dias. 15 operários constroem 8 casas em quantos dias?<br>
+                Operários: 10 → 15 = 30 × 10 / 15 = 20 dias (inversamente proporcional)<br>
+                Casas: 5 → 8 = 20 × 8 / 5 = 32 dias (diretamente proporcional)<br>
+                <strong>Resposta: 32 dias</strong>
+            </div>
+            
+            <h3>Porcentagem</h3>
+            <ul>
+                <li><strong>Aumentos:</strong> Valor × (1 + taxa/100)</li>
+                <li><strong>Descontos:</strong> Valor × (1 - taxa/100)</li>
+                <li><strong>De/Porcentagem:</strong> (parte/total) × 100</li>
+            </ul>
+            
+            <div class="example">
+                <strong>Exemplo:</strong> Um produto custava R$ 200 e teve 15% de aumento. Novo preço?<br>
+                200 × 1,15 = R$ 230
+            </div>
+            
+            <h3>Análise Combinatória</h3>
+            <ul>
+                <li><strong>Arranjo (ordem importa):</strong> A(n,p) = n! / (n-p)!</li>
+                <li><strong>Combinação (ordem não importa):</strong> C(n,p) = n! / (p! × (n-p)!)</li>
+                <li><strong>Permutação:</strong> P(n) = n!</li>
+            </ul>
+            
+            <div class="example">
+                <strong>Exemplo Arranjo:</strong> Quantos modos de escolher 3 pessoas para ocupar 3 cargos diferentes em um grupo de 10?<br>
+                A(10,3) = 10! / 7! = 10 × 9 × 8 = 720
+            </div>
+            <div class="example">
+                <strong>Exemplo Combinação:</strong> Quantas comissões de 3 pessoas podem ser formadas em um grupo de 10?<br>
+                C(10,3) = 10! / (3! × 7!) = 120
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>7. Diagramas Lógicos</h2>
+            
+            <h3>Diagramas de Venn</h3>
+            <p>Usados para representar relações entre conjuntos.</p>
+            
+            <div class="example">
+                <strong>Exemplo:</strong><br>
+                Em uma empresa, 80 pessoas falam inglês, 60 falam espanhol, 25 falam ambos. Quantas falam pelo menos uma?<br>
+                |A ∪ B| = |A| + |B| - |A ∩ B|<br>
+                = 80 + 60 - 25 = 115 pessoas
+            </div>
+            
+            <h3>Problemas com Conjuntos</h3>
+            <table>
+                <tr>
+                    <th>Fórmula</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td>|A ∪ B|</td>
+                    <td>Pelo menos um (A ou B ou ambos)</td>
+                </tr>
+                <tr>
+                    <td>|A ∩ B|</td>
+                    <td>Ambos (interseção)</td>
+                </tr>
+                <tr>
+                    <td>|A - B|</td>
+                    <td>Apenas A (não B)</td>
+                </tr>
+                <tr>
+                    <td>|A'| ou |complemento|</td>
+                    <td>Não A (complemento)</td>
+                </tr>
+            </table>
+            
+            <div class="example">
+                <strong>Exemplo 2:</strong><br>
+                100 pessoas: 70 usam cinema, 60 usam teatro, 40 usam ambos.<br>
+                |A ∪ B| = 70 + 60 - 40 = 90<br>
+                Nenhum = 100 - 90 = 10
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>8. Problemas de Raciocínio Sequencial</h2>
+            
+            <h3>Sequências de Letras</h3>
+            <div class="example">
+                <strong>Exemplo:</strong> A, C, E, G, ?<br>
+                Resposta: I (pula uma letra)
+            </div>
+            <div class="example">
+                <strong>Exemplo:</strong> A, D, G, J, ?<br>
+                Resposta: M (avança 3)
+            </div>
+            <div class="example">
+                <strong>Exemplo:</strong> Z, Y, X, W, ?<br>
+                Resposta: V (ordem reversa)
+            </div>
+            
+            <h3>Sequências com Datas/Números</h3>
+            <div class="example">
+                <strong>Exemplo:</strong> Janeiro=7, Março=5, Maio=5, Agosto=?, ?<br>
+                Resposta: Agosto=6 (letras), ?=? (baseado em dias do mês)
+            </div>
+            
+            <h3>Figuras Sequenciais</h3>
+            <ul>
+                <li>Contagem de lados (triângulo→quadrado→pentágono)</li>
+                <li>Rotação (90°→180°→270°)</li>
+                <li>Cores (alternando, progressão)</li>
+                <li>Tamanho (crescente/decrescente)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>9. Tabelas Verdade - Questões Clássicas</h2>
+            
+            <h3>Negação de Proposições</h3>
+            <ul>
+                <li>¬(A ∧ B) ≡ ¬A ∨ ¬B</li>
+                <li>¬(A ∨ B) ≡ ¬A ∧ ¬B</li>
+                <li>¬(A → B) ≡ A ∧ ¬B</li>
+                <li>¬(A ↔ B) ≡ (A ∧ ¬B) ∨ (¬A ∧ B)</li>
+                <li>¬∀x P(x) ≡ ∃x ¬P(x)</li>
+                <li>¬∃x P(x) ≡ ∀x ¬P(x)</li>
+            </ul>
+            
+            <div class="example">
+                <strong>Exemplo:</strong> A negação de "Todos os alunos passaram" é:<br>
+                "Existe pelo menos um aluno que não passou"
+            </div>
+            
+            <h3>Quantificadores</h3>
+            <table>
+                <tr>
+                    <th>Símbolo</th>
+                    <th>Significado</th>
+                    <th>Negação</th>
+                </tr>
+                <tr>
+                    <td>∀</td>
+                    <td>Para todo/todos</td>
+                    <td>∃ (existe)</td>
+                </tr>
+                <tr>
+                    <td>∃</td>
+                    <td>Existe/pelo menos um</td>
+                    <td>∀ (para todo)</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>10. Dicas para Prova</h2>
+            
+            <h3>Frequentemente Cobrado</h3>
+            <ul>
+                <li>Modus Ponens e Modus Tollens (identificar válidos)</li>
+                <li>Negação de proposições com "todo", "existe"</li>
+                <li>Regras de De Morgan</li>
+                <li>PA e PG (fórmulas)</li>
+                <li>Regra de três</li>
+                <li>Diagramas de Venn (conjuntos)</li>
+                <li>Silogismos categóricos</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Estratégia:</strong> Em questões de "conclusão", primeiro identifique as premissas, depois aplique as regras de inferência. Cuidado com falácias comuns!
+            </div>
+        </div>
+    </div>
+    
+    <!-- Painel de Progresso -->
+    <div class="progress-toggle">
+        <div class="progress-panel" id="progressPanel">
+            <h4>Meu Progresso</h4>
+            <label><input type="checkbox"> <span>Lógica Proposicional</span></label>
+            <label><input type="checkbox"> <span>Equivalências Lógicas</span></label>
+            <label><input type="checkbox"> <span>Argumentos e Silogismos</span></label>
+            <label><input type="checkbox"> <span>Sequências Numéricas (PA/PG)</span></label>
+            <label><input type="checkbox"> <span>Padrões e Sequências</span></label>
+            <label><input type="checkbox"> <span>Raciocínio Matemático</span></label>
+            <label><input type="checkbox"> <span>Diagramas de Venn</span></label>
+            <label><input type="checkbox"> <span>Problemas Sequenciais</span></label>
+            <label><input type="checkbox"> <span>Tabelas Verdade</span></label>
+            <label><input type="checkbox"> <span>Dicas para Prova</span></label>
+            <div class="progress-total">0/10 (0%)</div>
+        </div>
+        <button class="progress-btn" onclick="toggleProgress()">
+            <span>📊</span> Progresso
+        </button>
+    </div>
+    <script>
+        function toggleProgress() { document.getElementById('progressPanel').classList.toggle('open'); }
+        document.querySelectorAll('.progress-panel input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const total = document.querySelectorAll('.progress-panel input').length;
+                const checked = document.querySelectorAll('.progress-panel input:checked').length;
+                document.querySelector('.progress-total').textContent = checked + '/' + total + ' (' + Math.round(checked/total*100) + '%)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Dados - TCU Oracle APEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        /* Painel de Progresso Flutuante */
+        .progress-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .progress-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .progress-btn:hover { background: #c0392b; }
+        .progress-panel {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .progress-panel.open { display: block; }
+        .progress-panel h4 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .progress-panel label {
+            display: flex;
+            align-items: center;
+            gap:  padding: 810px;
+           px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .progress-panel label:hover { background: #f5f5f5; }
+        .progress-panel input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #e74c3c;
+        }
+        .progress-panel input:checked + span {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .progress-total {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+            font-weight: bold;
+            text-align: center;
+            color: #e74c3c;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav {
+            background: #2c3e50;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav a:hover { background: #34495e; }
+        .nav a.active { background: #e74c3c; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #c0392b;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            color: #e74c3c;
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+        .section p { margin-bottom: 15px; }
+        ul { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .tip {
+            background: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background: #fdedec;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th { background: #e74c3c; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #c0392b;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗄️ Banco de Dados</h1>
+        <p>Fundamentos de modelagem, normalização e arquitetura Oracle</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">Dashboard</a>
+        <a href="banco-dados.html" class="active">Banco de Dados</a>
+        <a href="sql.html">SQL</a>
+        <a href="plsql.html">PL/SQL</a>
+        <a href="raciocinio-logico.html">Raciocínio Lógico</a>
+        <a href="oracle-apex.html">Oracle APEX</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="section">
+            <h2>1. Modelagem de Dados e DER</h2>
+            
+            <h3>1.1 Entidades</h3>
+            <p>Entidades são objetos do mundo real com existência própria e distinguível. Representam conjuntos de informações sobre algo que queremos armazenar.</p>
+            <ul>
+                <li><strong>Entidade Forte</strong>: Existe independentemente de outras entidades. Ex: CLIENTE, PRODUTO</li>
+                <li><strong>Entidade Fraca</strong>: Depende de outra entidade para existir. Ex: DEPENDENTE (depende de FUNCIONARIO)</li>
+                <li><strong>Entidade Associativa</strong>: Relaciona duas ou mais entidades. Ex: PEDIDO_PRODUTO</li>
+            </ul>
+            
+            <h3>1.2 Atributos</h3>
+            <p>Características ou propriedades das entidades.</p>
+            <ul>
+                <li><strong>Simples</strong>: Atômico, indivisível. Ex: CPF, NOME</li>
+                <li><strong>Composto</strong>: Pode ser dividido. Ex: ENDEREÇO (rua, número, cidade)</li>
+                <li><strong>Multivalorado</strong>: Pode ter múltiplos valores. Ex: TELEFONE</li>
+                <li><strong>Derivado</strong>: Calculado a partir de outros. Ex: IDADE (calculada a partir de DATA_NASC)</li>
+            </ul>
+            
+            <h3>1.3 Relacionamentos</h3>
+            <p>Associações entre entidades que expressam como elas se relacionam.</p>
+            <ul>
+                <li><strong>Cardinalidade</strong>: Quantidade de ocorrências
+                    <ul>
+                        <li>1:1 (Um para Um) - Ex: CPF ↔ PESSOA</li>
+                        <li>1:N (Um para Muitos) - Ex: CLIENTE ↔ PEDIDO</li>
+                        <li>N:N (Muitos para Muitos) - Ex: ALUNO ↔ CURSO</li>
+                    </ul>
+                </li>
+                <li><strong>Participação</strong>:
+                    <ul>
+                        <li>Total: Toda entidade participa do relacionamento</li>
+                        <li>Parcial: Entity pode participar ou não</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Dica:</strong> Em relacionamentos N:N, é obrigatória a criação de uma entidade associativa (tabela de ligação) no modelo físico.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Normalização</h2>
+            <p>Processo de organizar dados para minimizar redundância e dependências problemáticas.</p>
+            
+            <h3>2.1 Primeira Forma Normal (1FN)</h3>
+            <ul>
+                <li>Cada coluna contém valores atômicos (indivisíveis)</li>
+                <li>Cada linha é única (tem Primary Key)</li>
+                <li>Não há grupos repetitivos</li>
+            </ul>
+            <div class="warning">
+                <strong>Errado:</strong> TELEFONE VARCHAR2(100) com "1199999, 1188888"<br>
+                <strong>Certo:</strong> Criar tabela TELEFONES com coluna TELEFONE
+            </div>
+            
+            <h3>2.2 Segunda Forma Normal (2FN)</h3>
+            <ul>
+                <li>Está na 1FN</li>
+                <li>Todos os atributos não-chave dependem completamente da PK</li>
+                <li>Aplica-se apenas a tabelas com chave composta</li>
+            </ul>
+            <div class="warning">
+                <strong>Exemplo de violação:</strong><br>
+                Tabela PEDIDO_ITEM(pk: id_pedido, id_produto)<br>
+                Se tiver "nome_produto", viola 2FN pois nome depende só de id_produto, não de toda a chave composta.
+            </div>
+            
+            <h3>2.3 Terceira Forma Normal (3FN)</h3>
+            <ul>
+                <li>Está na 2FN</li>
+                <li>Não há dependências transitivas</li>
+                <li>Atributos não-chave não podem depender de outros atributos não-chave</li>
+            </ul>
+            <div class="warning">
+                <strong>Exemplo de violação:</strong><br>
+                Tabela CLIENTE com CEP → BAIRRO → CIDADE<br>
+                CEP determina BAIRRO, que determina CIDADE. Cidade depende transitivamente da PK.
+            </div>
+            
+            <h3>2.4 Forma Normal de Boyce-Codd (BCNF)</h3>
+            <p>Extensão da 3FN. Para toda dependência funcional X → Y, X deve ser uma superchave.</p>
+        </div>
+        
+        <div class="section">
+            <h2>3. Tipos de Dados Oracle</h2>
+            
+            <h3>3.1 Tipos de Caractere</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Tamanho</th>
+                </tr>
+                <tr>
+                    <td>VARCHAR2(n)</td>
+                    <td>String de tamanho variável</td>
+                    <td>1-4000 bytes</td>
+                </tr>
+                <tr>
+                    <td>CHAR(n)</td>
+                    <td>String de tamanho fixo</td>
+                    <td>1-2000 bytes</td>
+                </tr>
+                <tr>
+                    <td>CLOB</td>
+                    <td>Character Large Object</td>
+                    <td>até 128TB</td>
+                </tr>
+                <tr>
+                    <td>NCHAR(n)</td>
+                    <td>String Unicode fixa</td>
+                    <td>1-2000 chars</td>
+                </tr>
+                <tr>
+                    <td>NVARCHAR2(n)</td>
+                    <td>String Unicode variável</td>
+                    <td>1-4000 chars</td>
+                </tr>
+            </table>
+            
+            <h3>3.2 Tipos Numéricos</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Exemplo</th>
+                </tr>
+                <tr>
+                    <td>NUMBER(p,s)</td>
+                    <td>Número com precisão e escala</td>
+                    <td>NUMBER(10,2) → 12345678.90</td>
+                </tr>
+                <tr>
+                    <td>FLOAT</td>
+                    <td>Número de ponto flutuante</td>
+                    <td>FLOAT(63)</td>
+                </tr>
+                <tr>
+                    <td>BINARY_FLOAT</td>
+                    <td>32-bit float</td>
+                    <td>Precisão ~7 dígitos</td>
+                </tr>
+                <tr>
+                    <td>BINARY_DOUBLE</td>
+                    <td>64-bit float</td>
+                    <td>Precisão ~15 dígitos</td>
+                </tr>
+            </table>
+            
+            <h3>3.3 Tipos de Data</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Precisão</td>
+                </tr>
+                <tr>
+                    <td>DATE</td>
+                    <td>Data e hora</td>
+                    <td>1 segundo</td>
+                </tr>
+                <tr>
+                    <td>TIMESTAMP</td>
+                    <td>Data com fração de segundos</td>
+                    <td>até 9 dígitos</td>
+                </tr>
+                <tr>
+                    <td>TIMESTAMP WITH TIME ZONE</td>
+                    <td>Timestamp com fuso horário</td>
+                    <td>timezone incluso</td>
+                </tr>
+                <tr>
+                    <td>TIMESTAMP WITH LOCAL TIME ZONE</td>
+                    <td>Timestamp convertendo para fuso da sessão</td>
+                    <td>timezone da sessão</td>
+                </tr>
+            </table>
+            
+            <h3>3.4 Tipos Binários</h3>
+            <table>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descrição</th>
+                    <th>Tamanho</th>
+                </tr>
+                <tr>
+                    <td>BLOB</td>
+                    <td>Binary Large Object</td>
+                    <td>até 128TB</td>
+                </tr>
+                <tr>
+                    <td>BFILE</td>
+                    <td>Pointer para arquivo externo</td>
+                    <td>até 4GB</td>
+                </tr>
+                <tr>
+                    <td>RAW(n)</td>
+                    <td>Dados binários de tamanho fixo</td>
+                    <td>1-2000 bytes</td>
+                </tr>
+                <tr>
+                    <td>ROWID</td>
+                    <td>Endereço único da linha</td>
+                    <td>10 bytes</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>4. Índices e Chaves</h2>
+            
+            <h3>4.1 Tipos de Chaves</h3>
+            <ul>
+                <li><strong>Primary Key (PK)</strong>: Identifica exclusivamente cada linha. Não permite NULL nem duplicados. Cria índice automaticamente.</li>
+                <li><strong>Foreign Key (FK)</strong>: Referencia Primary Key de outra tabela. Mantém integridade referencial.</li>
+                <li><strong>Unique Key (UK)</strong>: Não permite duplicados. Permite múltiplos NULLs (em Oracle). Cria índice automaticamente.</li>
+            </ul>
+            
+            <h3>4.2 Constraints</h3>
+            <table>
+                <tr>
+                    <th>Constraint</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td>NOT NULL</td>
+                    <td>Coluna obrigatória</td>
+                </tr>
+                <tr>
+                    <td>UNIQUE</td>
+                    <td>Valores não podem se repetir</td>
+                </tr>
+                <tr>
+                    <td>PRIMARY KEY</td>
+                    <td>Chave primária (única + não nulo)</td>
+                </tr>
+                <tr>
+                    <td>FOREIGN KEY</td>
+                    <td>Referência a outra tabela</td>
+                </tr>
+                <tr>
+                    <td>CHECK</td>
+                    <td>Condição lógica deve ser satisfeita</td>
+                </tr>
+                <tr>
+                    <td>DEFAULT</td>
+                    <td>Valor padrão se não especificado</td>
+                </tr>
+            </table>
+            
+            <h3>4.3 Tipos de Índices</h3>
+            <ul>
+                <li><strong>B-tree (B*Tree)</strong>: Padrão, eficiente para alta cardinalidade. Estrutura hierárquica balanceada.</li>
+                <li><strong>Bitmap</strong>: Ideal para baixa cardinalidade (sexo, estado civil). Armazena bits para cada valor.</li>
+                <li><strong>Function-based</strong>: Indexa resultado de funções/expressões.</li>
+                <li><strong>Composite</strong>: Indexa múltiplas colunas.</li>
+                <li><strong>Unique</strong>: Garante valores únicos no índice.</li>
+            </ul>
+            
+            <div class="code">
+-- Exemplos de criação de índices
+CREATE INDEX idx_nome ON funcionarios(nome);
+CREATE BITMAP INDEX idx_sexo ON clientes(sexo);
+CREATE INDEX idx_upper ON funcionarios(UPPER(nome));
+CREATE UNIQUE INDEX idx_cpf ON pessoas(cpf);</div>
+        </div>
+        
+        <div class="section">
+            <h2>5. Controle de Transações</h2>
+            
+            <h3>5.1 Comandos TCL</h3>
+            <ul>
+                <li><strong>COMMIT</strong>: Persiste todas as alterações da transação atual</li>
+                <li><strong>ROLLBACK</strong>: Desfaz todas as alterações da transação atual</li>
+                <li><strong>SAVEPOINT nome</strong>: Cria ponto de salvamento parcial</li>
+            </ul>
+            
+            <div class="code">
+-- Exemplo de transação
+INSERT INTO contas (id, saldo) VALUES (1, 1000);
+SAVEPOINT s1;
+UPDATE contas SET saldo = saldo - 100 WHERE id = 1;
+SAVEPOINT s2;
+ROLLBACK TO s1;  -- Volta ao estado após primeiro insert
+COMMIT;</div>
+            
+            <h3>5.2 Propriedades ACID</h3>
+            <ul>
+                <li><strong>Atomicidade</strong>: Transação é atômica (tudo ou nada)</li>
+                <li><strong>Consistência</strong>: Transação leva de um estado consistente a outro</li>
+                <li><strong>Isolamento</strong>: Transações concorrentes não interferem entre si</li>
+                <li><strong>Durabilidade</strong>: Commit persiste mesmo em caso de falha</li>
+            </ul>
+            
+            <h3>5.3 Níveis de Isolamento</h3>
+            <table>
+                <tr>
+                    <th>Nível</th>
+                    <th>Dirty Read</th>
+                    <th>Non-Repeatable</th>
+                    <th>Phantom</th>
+                </tr>
+                <tr>
+                    <td>READ UNCOMMITTED</td>
+                    <td>Possível</td>
+                    <td>Possível</td>
+                    <td>Possível</td>
+                </tr>
+                <tr>
+                    <td>READ COMMITTED</td>
+                    <td>Não</td>
+                    <td>Possível</td>
+                    <td>Possível</td>
+                </tr>
+                <tr>
+                    <td>REPEATABLE READ</td>
+                    <td>Não</td>
+                    <td>Não</td>
+                    <td>Possível</td>
+                </tr>
+                <tr>
+                    <td>SERIALIZABLE</td>
+                    <td>Não</td>
+                    <td>Não</td>
+                    <td>Não</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>6. Tablespaces e Segmentos</h2>
+            
+            <h3>6.1 Estrutura Lógica</h3>
+            <ul>
+                <li><strong>Tablespace</strong>: Unidade lógica de armazenamento. Contém um ou mais datafiles.</li>
+                <li><strong>Segment</strong>: Conjunto de extents alocados para um objeto (tabela, índice).</li>
+                <li><strong>Extent</strong>: Conjunto de data blocks contíguos.</li>
+                <li><strong>Data Block</strong>: Menor unidade de E/S (geralmente 8KB).</li>
+            </ul>
+            
+            <h3>6.2 Oracle Data Dictionary</h3>
+            <p>Conjunto de tabelas e visões de somente leitura que armazenam metadados do banco.</p>
+            <div class="code">
+-- Consultas úteis no Data Dictionary
+SELECT * FROM user_tables;
+SELECT * FROM user_indexes;
+SELECT * FROM user_constraints;
+SELECT * FROM user_tab_columns WHERE table_name = 'FUNCIONARIOS';
+SELECT * FROM user_cons_columns WHERE constraint_name = 'PK_FUNC';</div>
+        </div>
+        
+        <div class="section">
+            <h2>7. Controle de Concorrência e Locking</h2>
+            
+            <h3>7.1 Tipos de Lock</h3>
+            <ul>
+                <li><strong>DML Lock</strong>: Protege dados (linhas). Ex: LOCK DE LINHA.</li>
+                <li><strong>DDL Lock</strong>: Protege estruturas. Ex: LOCK DE TABELA.</li>
+                <li><strong>Internal Lock</strong>: Protege recursos internos.</li>
+            </ul>
+            
+            <h3>7.2 Modos de Lock</h3>
+            <ul>
+                <li><strong>Row Share (SS)</strong>: Linha compartilhada para atualização</li>
+                <li><strong>Row Exclusive (SX)</strong>: Linha exclusiva (INSERT, UPDATE, DELETE)</li>
+                <li><strong>Share (S)</strong>: Compartilhado para queries</li>
+                <li><strong>Share Row Exclusive (SSX)</strong>: Compartilhado mas exclusivo para linhas</li>
+                <li><strong>Exclusive (X)</strong>: TOTALMENTE EXCLUSIVO</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Deadlock</strong>: Ocorre quando duas ou mais sessões esperam lock uma da outra. Oracle detecta e resolve automaticamente desfazendo uma transação.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Painel de Progresso -->
+    <div class="progress-toggle">
+        <div class="progress-panel" id="progressPanel">
+            <h4>Meu Progresso</h4>
+            <label><input type="checkbox"> <span>Modelagem e DER</span></label>
+            <label><input type="checkbox"> <span>Normalização (1FN, 2FN, 3FN)</span></label>
+            <label><input type="checkbox"> <span>Tipos de Dados Oracle</span></label>
+            <label><input type="checkbox"> <span>Índices e Chaves</span></label>
+            <label><input type="checkbox"> <span>Controle de Transações</span></label>
+            <label><input type="checkbox"> <span>Tablespaces e Segmentos</span></label>
+            <label><input type="checkbox"> <span>Concorrência e Locking</span></label>
+            <div class="progress-total">0/7 (0%)</div>
+        </div>
+        <button class="progress-btn" onclick="toggleProgress()">
+            <span>📊</span> Progresso
+        </button>
+    </div>
+    <script>
+        function toggleProgress() {
+            document.getElementById('progressPanel').classList.toggle('open');
+        }
+        document.querySelectorAll('.progress-panel input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const total = document.querySelectorAll('.progress-panel input').length;
+                const checked = document.querySelectorAll('.progress-panel input:checked').length;
+                document.querySelector('.progress-total').textContent = checked + '/' + total + ' (' + Math.round(checked/total*100) + '%)';
+            });
+        });
+    </script>
+</body>
+</html>

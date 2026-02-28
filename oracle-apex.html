@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle APEX - TCU Oracle APEX</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        /* Painel de Progresso Flutuante */
+        .progress-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .progress-btn { background: #27ae60; color: white; border: none; padding: 15px 20px; border-radius: 50px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        .progress-btn:hover { background: #1e8449; }
+        .progress-panel { position: absolute; bottom: 60px; right: 0; background: white; border-radius: 10px; padding: 20px; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; max-height: 70vh; overflow-y: auto; }
+        .progress-panel.open { display: block; }
+        .progress-panel h4 { color: #27ae60; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .progress-panel label { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; border-radius: 5px; transition: background 0.2s; }
+        .progress-panel label:hover { background: #f5f5f5; }
+        .progress-panel input[type="checkbox"] { width: 18px; height: 18px; accent-color: #27ae60; }
+        .progress-panel input:checked + span { text-decoration: line-through; color: #888; }
+        .progress-total { margin-top: 15px; padding-top: 15px; border-top: 2px solid #eee; font-weight: bold; text-align: center; color: #27ae60; }
+        
+        .header {
+            background: linear-gradient(135deg, #1e8449, #27ae60);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .nav {
+            background: #2c3e50;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+        .nav a:hover { background: #34495e; }
+        .nav a.active { background: #27ae60; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #1e8449;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            color: #27ae60;
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+        ul { margin-left: 25px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th { background: #27ae60; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .tip {
+            background: #fef9e7;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .warning {
+            background: #fdedec;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1e8449;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌐 Oracle APEX</h1>
+        <p>Application Express - Desenvolvimento Low-Code</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">Dashboard</a>
+        <a href="banco-dados.html">Banco de Dados</a>
+        <a href="sql.html">SQL</a>
+        <a href="plsql.html">PL/SQL</a>
+        <a href="raciocinio-logico.html">Raciocínio Lógico</a>
+        <a href="oracle-apex.html" class="active">Oracle APEX</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Voltar ao Dashboard</a>
+        
+        <div class="section">
+            <h2>1. Conceitos Fundamentais</h2>
+            
+            <h3>Arquitetura Oracle APEX</h3>
+            <ul>
+                <li><strong>Workspace</strong>: Ambiente isolado de desenvolvimento e execução</li>
+                <li><strong>Application</strong>: Conjunto de páginas (pages) que formam uma aplicação</li>
+                <li><strong>Page</strong>: Uma tela individual da aplicação</li>
+                <li><strong>Region</strong>: Área de conteúdo dentro de uma página</li>
+                <li><strong>Item</strong>: Campos de entrada (text, select, checkbox, etc.)</li>
+                <li><strong>Button</strong>: Elementos que disparam ações</li>
+                <li><strong>Process</strong>: Lógica de processamento (PL/SQL, etc.)</li>
+            </ul>
+            
+            <h3>Ambiente</h3>
+            <ul>
+                <li><strong>apex.oracle.com</strong>: Ambiente gratuito da Oracle para aprendizado</li>
+                <li><strong>Oracle Autonomous Database</strong>: Já vem com APEX integrado</li>
+                <li><strong>On-premises</strong>: Instalação local (ORDS + APEX)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>2. Criação de Aplicações</h2>
+            
+            <h3>Criação via Wizard</h3>
+            <ol>
+                <li>App Builder → Create → New Application</li>
+                <li>Definir nome e atributos</li>
+                <li>Adicionar páginas (Blank, Dashboard, Master-Detail, etc.)</li>
+                <li>Configurar tema e navegação</li>
+                <li>Verificar e criar</li>
+            </ol>
+            
+            <h3>Criação Manual</h3>
+            <ul>
+                <li>Criar página em branco</li>
+                <li>Adicionar regiões manualmente</li>
+                <li>Configurar cada componente</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Dica:</strong> Para a prova do TCU, pratique a criação tanto pelo wizard quanto manualmente para entender todos os componentes.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Pages (Páginas)</h2>
+            
+            <h3>Tipos de Página</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>Blank</td><td>Página vazia para customização</td></tr>
+                <tr><td>Dashboard</td><td>Painel com gráficos e métricas</td></tr>
+                <tr><td>Form</td><td>Formulário para entrada de dados</td></tr>
+                <tr><td>Report</td><td>Listagem de dados</td></tr>
+                <tr><td>Login</td><td>Página de autenticação</td></tr>
+                <tr><td>Modal Dialog</td><td>Diálogo popup</td></tr>
+            </table>
+            
+            <h3>Propriedades de Página</h3>
+            <ul>
+                <li><strong>Page ID</strong>: Identificador único</li>
+                <li><strong>Page Name</strong>: Nome descritivo</li>
+                <li><strong>Title</strong>: Título exibido no browser</li>
+                <li><strong>Breadcrumb</strong>: Navegação estrutural</li>
+                <li><strong>Authorization Scheme</strong>: Controle de acesso</li>
+                <li><strong>Condition</strong>: Exibição condicional</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>4. Regions (Regiões)</h2>
+            
+            <h3>Tipos de Região</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>HTML</td><td>Conteúdo HTML estático ou dinâmico</td></tr>
+                <tr><td>PL/SQL Dynamic Content</td><td>Conteúdo gerado por PL/SQL</td></tr>
+                <tr><td>Classic Report</td><td>Relatório tabular simples</td></tr>
+                <tr><td>Interactive Report</td><td>Relatório interativo com filtros</td></tr>
+                <tr><td>Interactive Grid</td><td>Grid editável avançado</td></tr>
+                <tr><td>Chart</td><td>Gráficos (bar, line, pie, etc.)</td></tr>
+                <tr><td>Breadcrumb</td><td>Navegação estrutural</td></tr>
+                <tr><td>List</td><td>Menu de navegação</td></tr>
+                <tr><td>Tree</td><td>Hierarquia em formato árvore</td></tr>
+                <tr><td>Faceted Search</td><td>Filtros laterais</td></tr>
+            </table>
+            
+            <h3>Propriedades de Região</h3>
+            <ul>
+                <li><strong>Title</strong>: Cabeçalho da região</li>
+                <li><strong>Type</strong>: Tipo de região</li>
+                <li><strong>Source</strong>: Fonte dos dados (SQL, PL/SQL, URL)</li>
+                <li><strong>Template</strong>: Modelo visual</li>
+                <li><strong>Display Point</strong>: Posição na página</li>
+                <li><strong>Condition</strong>: Condição de exibição</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>5. Items (Itens)</h2>
+            
+            <h3>Tipos de Itens</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>Text Field</td><td>Campo de texto simples</td></tr>
+                <tr><td>Textarea</td><td>Múltiplas linhas</td></tr>
+                <tr><td>Select List</td><td>Lista suspensa (dropdown)</td></tr>
+                <tr><td>Shuttle</td><td>Lista de seleção múltipla</td></tr>
+                <tr><td>Checkbox</td><td>Caixa de seleção</td></tr>
+                <tr><td>Radio Group</td><td>Opções mutuamente exclusivas</td></tr>
+                <tr><td>Date Picker</td><td>Seletor de data</td></tr>
+                <tr><td>File Upload</td><td>Upload de arquivos (BLOB)</td></tr>
+                <tr><td>Hidden</td><td>Oculto (não exibe, mas armazena)</td></tr>
+                <tr><td>Display Only</td><td>Somente leitura</td></tr>
+                <tr><td>Popup LOV</td><td>Janela popup de busca</td></tr>
+                <tr><td>Password</td><td>Campo de senha</td></tr>
+                <tr><td>Switch</td><td>Alternador (toggle)</td></tr>
+                <tr><td>Number Field</td><td>Campo numérico</td></tr>
+            </table>
+            
+            <h3>Propriedades Importantes</h3>
+            <ul>
+                <li><strong>Name</strong>: Identificador único (P1_NOME)</li>
+                <li><strong>Label</strong>: Rótulo exibido</li>
+                <li><strong>Display</strong>: Width, Height</li>
+                <li><strong>Settings</strong>: Max Length, Placeholder</li>
+                <li><strong>Default</strong>: Valor padrão</li>
+                <li><strong>LOV</strong>: List of Values (para Select/List)</li>
+                <li><strong>Validation</strong>: Regras de validação</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>6. Processes (Processos)</h2>
+            
+            <h3>Tipos de Processos</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>PL/SQL</td><td>Executa código PL/SQL</td></tr>
+                <tr><td>Multi Row Update</td><td>Atualiza múltiplas linhas</td></tr>
+                <tr><td>Form Collection</td><td>Gerencia dados em memória</td></tr>
+                <tr><td>Web Service</td><td>Consome API REST</td></tr>
+                <tr><td>Refresh</td><td>Atualiza região</td></tr>
+                <tr><td>Close Dialog</td><td>Fecha diálogo modal</td></tr>
+                <tr><td>Execute Code</td><td>Executa código JavaScript</td></tr>
+            </table>
+            
+            <h3>Process Points</h3>
+            <ul>
+                <li><strong>On Load - Before Header</strong>: Antes do carregamento</li>
+                <li><strong>On Load - After Header</strong>: Após cabeçalho (common)</li>
+                <li><strong>On Submit - Before Computation</strong>: Antes de computações</li>
+                <li><strong>On Submit - Before Validation</strong>: Antes de validações</li>
+                <li><strong>On Submit - Before Process</strong>: Antes de processos</li>
+                <li><strong>On Submit - After Processing</strong>: Após processos (common)</li>
+            </ul>
+            
+            <h3>Exemplo de Processo</h3>
+            <div class="code">
+-- Inserir novo funcionário
+INSERT INTO employees (
+    employee_id,
+    last_name,
+    email,
+    hire_date,
+    job_id
+) VALUES (
+    :P1_EMP_ID,
+    :P1_NOME,
+    :P1_EMAIL,
+    SYSDATE,
+    :P1_CARGO
+);
+
+-- Mensagem de sucesso
+APEX_MESSAGE.SUCCESS('Funcionário inserido com sucesso!');</div>
+        </div>
+        
+        <div class="section">
+            <h2>7. Validações</h2>
+            
+            <h3>Tipos de Validação</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>Item Not Null</td><td>Campo obrigatório</td></tr>
+                <tr><td>Item is numeric</td><td>Apenas números</td></tr>
+                <tr><td>Item is text</td><td>Apenas texto</td></tr>
+                <tr><td>Regular Expression</td><td>Padrão regex</td></tr>
+                <tr><td>Function Returning Boolean</td><td>Função PL/SQL customizada</td></tr>
+                <tr><td>SQL Statement</td><td>Verificação via SQL</td></tr>
+            </table>
+            
+            <h3>Exemplo de Validação</h3>
+            <div class="code">
+-- Validar se email é único
+SELECT 1 
+FROM employees 
+WHERE email = :P1_EMAIL 
+AND employee_id != NVL(:P1_EMP_ID, 0)
+
+-- Se retornar linha, email já existe
+
+-- Function Returning Boolean
+DECLARE
+BEGIN
+    IF :P1_SALARIO < 0 THEN
+        RETURN FALSE;
+    END IF;
+    RETURN TRUE;
+END;</div>
+        </div>
+        
+        <div class="section">
+            <h2>8. Relatórios Interativos</h2>
+            
+            <h3>Interactive Report</h3>
+            <ul>
+                <li><strong>Column Filters</strong>: Filtros por coluna</li>
+                <li><strong>Filter Row</strong>: Linha de filtro rápido</li>
+                <li><strong>Sorting</strong>: Ordenação por clique</li>
+                <li><strong>Control Break</strong>: Agrupamento</li>
+                <li><strong>Highlight</strong>: Destaque condicional</li>
+                <li><strong>Computation</strong>: Cálculos</li>
+                <li><strong>Aggregate</strong>: Totais</li>
+                <li><strong>Chart</strong>: Gráfico integrado</li>
+                <li><strong>Group by</strong>: Agrupamento</li>
+                <li><strong>Save Report</strong>: Salvar relatório</li>
+            </ul>
+            
+            <h3>Interactive Grid</h3>
+            <ul>
+                <li>Edição inline de dados</li>
+                <li>Múltiplas linhas selecionáveis</li>
+                <li>Validações em linha</li>
+                <li>Agregação automática</li>
+                <li>Personalização de colunas</li>
+            </ul>
+            
+            <h3>Configuração de Colunas</h3>
+            <ul>
+                <li><strong>Heading</strong>: Nome exibido</li>
+                <li><strong>Width</strong>: Largura</li>
+                <li><strong>Alignment</strong>: Alinhamento</li>
+                <li><strong>Format Mask</strong>: Formato (ex: $9G999)</li>
+                <li><strong>Sum</strong>: Soma automática</li>
+                <li><strong>Sort</strong>: Ordenação</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>9. Forms</h2>
+            
+            <h3>Tipos de Formulários</h3>
+            <table>
+                <tr><th>Tipo</th><th>Descrição</th></tr>
+                <tr><td>Form on Table</td><td>Formulário baseado em tabela</td></tr>
+                <tr><td>Form on View</td><td>Formulário baseado em view</td></tr>
+                <tr><td>Master Detail</td><td>Relacionamento pai-filho</td></tr>
+                <td>Tabular Form</td><td>Múltiplas linhas editáveis</td>
+                <tr><td>Modal Dialog</td><td>Formulário popup</td></tr>
+            </table>
+            
+            <h3>Criação via Wizard</h3>
+            <ol>
+                <li>Create Page → Form → Form on Table with Report</li>
+                <li>Selecionar tabela e colunas</li>
+                <li>Definir Primary Key</li>
+                <li>Configurarbranches/processos</li>
+                <li>Finalizar</li>
+            </ol>
+            
+            <h3>Operações DML Automáticas</h3>
+            <ul>
+                <li><strong>Fetch</strong>: Carrega dados para os itens</li>
+                <li><strong>Insert Process</strong>: Insere novo registro</li>
+                <li><strong>Update Process</strong>: Atualiza registro existente</li>
+                <li><strong>Delete Process</strong>: Exclui registro</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>10. Sessões e URLs</h2>
+            
+            <h3>URLs APEX</h3>
+            <div class="code">
+f?p=APP_ID:PAGE_ID:INSTANCE:REQUEST:DEBUG:CLEAR_CACHE:SESSION:PRINTER_FRIENDLY
+</div>
+            
+            <h3>Componentes da URL</h3>
+            <table>
+                <tr><th>Parâmetro</th><th>Descrição</th><th>Exemplo</th></tr>
+                <tr><td>APP_ID</td><td>ID da aplicação</td><td>100</td></tr>
+                <tr><td>PAGE_ID</td><td>ID da página</td><td>1</td></tr>
+                <tr><td>INSTANCE</td><td>Instância (0=atual)</td><td>0</td></tr>
+                <tr><td>REQUEST</td><td>Botão/ação</td><td>SAVE</td></tr>
+                <tr><td>DEBUG</td><td>Modo debug (</td><td>YES</td></tr>
+                <trYES/NO)><td>CLEAR_CACHE</td><td>Limpar cache</td><td>12345</td></tr>
+                <tr><td>SESSION</td><td>ID da sessão</td><td>123456789</td></tr>
+            </table>
+            
+            <h3>Variáveis de Sessão</h3>
+            <ul>
+                <li><strong>APP_PAGE_ID</strong>: Página atual</li>
+                <li><strong>APP_SESSION</strong>: ID da sessão</li>
+                <li><strong>APP_USER</strong>: Usuário logado</li>
+                <li><strong>APP_ALIAS</strong>: Alias da aplicação</li>
+                <li><strong>:Fxx</strong>: Item da página xx</li>
+                <li><strong>:Pxx_ITEM</strong>: Item da página atual</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>11. Dynamic Actions</h2>
+            
+            <h3>Eventos</h3>
+            <ul>
+                <li><strong>Click</strong>: Clique em elemento</li>
+                <li><strong>Change</strong>: Mudança de valor</li>
+                <li><strong>Key Release</strong>: Ao soltar tecla</li>
+                <li><strong>Focus</strong>: Ao receber foco</li>
+                <li><strong>Blur</strong>: Ao perder foco</li>
+                <li><strong>Mouse Enter/Leave</strong>: Entrada/saída do mouse</li>
+                <li><strong>Timer</strong>: Intervalo de tempo</li>
+            </ul>
+            
+            <h3>Ações</h3>
+            <table>
+                <tr><th>Ação</th><th>Descrição</th></tr>
+                <tr><td>Show</td><td>Exibe elemento</td></tr>
+                <tr><td>Hide</td><td>Oculta elemento</td></tr>
+                <tr><td>Enable</td><td>Habilita elemento</td></tr>
+                <tr><td>Disable</td><td>Desabilita elemento</td></tr>
+                <tr><td>Set Value</td><td>Define valor</td></tr>
+                <tr><td>Execute PL/SQL</td><td>Executa código PL/SQL</td></tr>
+                <tr><td>Execute JavaScript</td><td>Executa JS</td></tr>
+                <tr><td>Refresh</td><td>Atualiza região</td></tr>
+                <tr><td>Alert</td><td>Mostra mensagem</td></tr>
+                <tr><td>Confirm</td><td>Confirmação</td></tr>
+            </table>
+            
+            <h3>Exemplo</h3>
+            <div class="code">
+-- Quando P1_DEPTO mudar
+Event: Change
+Selection Type: Item(s)
+Item(s): P1_DEPTO
+
+-- Ação: Mostrar região de detalhes
+Action: Show
+Selection Type: Region
+Region: REG_DETALHES
+Condition: P1_DEPTO IS NOT NULL</div>
+        </div>
+        
+        <div class="section">
+            <h2>12. Authorization e Authentication</h2>
+            
+            <h3>Authorization Schemes</h3>
+            <ul>
+                <li><strong>Exists</strong>: Verifica se registro existe</li>
+                <li><strong>Not Exists</strong>: Verifica se NÃO existe</li>
+                <li><strong>PL/SQL Function</strong>: Função que retorna boolean</li>
+                <li><strong>Is In Role</strong>: Verifica papel do usuário</li>
+            </ul>
+            
+            <div class="code">
+-- Exemplo: verificar se usuário é gerente
+DECLARE
+    v_gerente NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_gerente
+    FROM employees
+    WHERE manager_id = :APP_USER
+    AND ROWNUM = 1;
+    
+    RETURN v_gerente > 0;
+END;</div>
+            
+            <h3>Authentication Schemes</h3>
+            <ul>
+                <li><strong>Custom</strong>: Autenticação própria</li>
+                <li><strong>Database Account</strong>: Usuário do banco</li>
+                <li><strong>LDAP</strong>: Integração com Active Directory</li>
+                <li><strong>Social</strong>: OAuth (Google, Facebook, etc.)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>13. Themes e Templates</h2>
+            
+            <h3>Universal Theme (UT)</h3>
+            <p>Tema padrão e mais moderno do APEX (versão 5+).</p>
+            
+            <h3>Componentes de Template</h3>
+            <ul>
+                <li><strong>Page Template</strong>: Estrutura da página</li>
+                <li><strong>Region Template</strong>: Layout das regiões</li>
+                <li><strong>Button Template</th><td>Estilo dos botões</li>
+                <li><strong>Label Template</th><td>Estilo dos rótulos</li>
+                <li><strong>Item Template</th><td>Estilo dos campos</td>
+                <li><strong>Menu Template</th><td>Estilo dos menus</li>
+            </ul>
+            
+            <h3>Theme Roller</h3>
+            <p>Ferramenta visual para customizar cores, fontes, espaçamento sem escrever CSS.</p>
+        </div>
+        
+        <div class="section">
+            <h2>14. SQL Workshop</h2>
+            
+            <h3>Componentes</h3>
+            <ul>
+                <li><strong>SQL Commands</strong>: Editor SQL interativo</li>
+                <li><strong>Object Browser</strong>: Navegador de objetos</li>
+                <li><strong>SQL Scripts</strong>: Repositório de scripts</li>
+                <li><strong>Data Workshop</strong>: Import/Export de dados</li>
+                <li><strong>Query Builder</strong>: Construtor visual de queries</li>
+            </ul>
+            
+            <h3>Utilidades</h3>
+            <ul>
+                <li>Testar queries antes de usar em aplicações</li>
+                <li>Explorar estrutura das tabelas</li>
+                <li>Executar DML e DDL</li>
+                <li>Importar dados de CSV</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>15. Team Development</h2>
+            
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Features</strong>: Gerenciamento de funcionalidades</li>
+                <li><strong>Milestones</strong>: Marcos do projeto</li>
+                <li><strong>To-dos</strong>: Tarefas</li>
+                <li><strong>Bugs</strong>: Controle de bugs</li>
+                <li><strong>Feedback</strong>: Coleta de feedback</li>
+            </ul>
+            
+            <h3>Gerenciamento de Bugs</h3>
+            <ul>
+                <li>Criar issues com descrição</li>
+                <li>Atribuir a desenvolvedores</li>
+                <li>Definir prioridade e status</li>
+                <li>Acompanhar histórico</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>16. REST APIs</h2>
+            
+            <h3>APEX REST API</h3>
+            <ul>
+                <li><strong>Object API</strong>: CRUD em tabelas via REST</li>
+                <li><strong>Query Builder API</strong>: Queries via REST</li>
+                <li><strong>ORDS</strong>: Oracle REST Data Services</li>
+            </ul>
+            
+            <h3>URL de Exemplo</h3>
+            <div class="code">
+-- GET - Listar funcionários
+GET /ords/workspace/employees/
+
+-- POST - Criar funcionário  
+POST /ords/workspace/employees/
+Body: {"last_name": "Silva", "email": "SILVA"}
+
+-- PUT - Atualizar
+PUT /ords/workspace/employees/100
+Body: {"salary": 5000}
+
+-- DELETE - Excluir
+DELETE /ords/workspace/employees/100</div>
+            
+            <h3>Consumo em APEX</h3>
+            <ul>
+                <li>Web Source Modules: Definir origens REST</li>
+                <li>Process ou Dynamic Action para chamar APIs</li>
+                <li>APEX_WEB_SERVICE API para requisições</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Painel de Progresso -->
+    <div class="progress-toggle">
+        <div class="progress-panel" id="progressPanel">
+            <h4>Meu Progresso</h4>
+            <label><input type="checkbox"> <span>Conceitos e Arquitetura</span></label>
+            <label><input type="checkbox"> <span>Criação de Aplicações</span></label>
+            <label><input type="checkbox"> <span>Pages</span></label>
+            <label><input type="checkbox"> <span>Regions</span></label>
+            <label><input type="checkbox"> <span>Itens e Tipos</span></label>
+            <label><input type="checkbox"> <span>Processos</span></label>
+            <label><input type="checkbox"> <span>Validações</span></label>
+            <label><input type="checkbox"> <span>Relatórios Interativos</span></label>
+            <label><input type="checkbox"> <span>Forms</span></label>
+            <label><input type="checkbox"> <span>URLs e Sessões</span></label>
+            <label><input type="checkbox"> <span>Dynamic Actions</span></label>
+            <label><input type="checkbox"> <span>Autorização e Autenticação</span></label>
+            <label><input type="checkbox"> <span>Themes e Templates</span></label>
+            <label><input type="checkbox"> <span>SQL Workshop</span></label>
+            <label><input type="checkbox"> <span>REST APIs</span></label>
+            <div class="progress-total">0/15 (0%)</div>
+        </div>
+        <button class="progress-btn" onclick="toggleProgress()">
+            <span>📊</span> Progresso
+        </button>
+    </div>
+    <script>
+        function toggleProgress() { document.getElementById('progressPanel').classList.toggle('open'); }
+        document.querySelectorAll('.progress-panel input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const total = document.querySelectorAll('.progress-panel input').length;
+                const checked = document.querySelectorAll('.progress-panel input:checked').length;
+                document.querySelector('.progress-total').textContent = checked + '/' + total + ' (' + Math.round(checked/total*100) + '%)';
+            });
+        });
+    </script>
+</body>
+</html>
